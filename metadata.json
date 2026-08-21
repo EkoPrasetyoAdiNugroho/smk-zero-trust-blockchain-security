@@ -1,0 +1,6 @@
+{
+  "name": "SIA SMK Cloud Security & Blockchain",
+  "description": "Sistem Informasi Administrasi SMK dengan arsitektur Zero Trust, RBAC, TOTP MFA, dan Verifikasi Keabsahan Ijazah, Transkrip Nilai, & Sertifikat PKL berbasis Blockchain.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
