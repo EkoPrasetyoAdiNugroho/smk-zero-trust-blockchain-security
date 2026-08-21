@@ -5,17 +5,17 @@ import {
   XCircle,
   Play,
   RefreshCw,
-  Cpu,
   Lock,
-  FileCheck,
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { api } from '../api';
 import { TestResult } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export const SecurityTestCenter: React.FC = () => {
+  const { t, language } = useLanguage();
   const [running, setRunning] = useState(false);
   const [report, setReport] = useState<{
     summary: { total: number; passed: number; failed: number; timestamp: string };
@@ -45,9 +45,9 @@ export const SecurityTestCenter: React.FC = () => {
     }
   };
 
-  const filteredResults = report?.results.filter((t) => {
+  const filteredResults = report?.results.filter((testItem) => {
     if (categoryFilter === 'ALL') return true;
-    return t.category === categoryFilter;
+    return testItem.category === categoryFilter;
   });
 
   return (
@@ -65,10 +65,10 @@ export const SecurityTestCenter: React.FC = () => {
               </span>
             </div>
             <h2 className="text-xl font-bold text-slate-800 mt-0.5">
-              Pusat Pengujian Keamanan & Integritas Nyata
+              {t.tests.title}
             </h2>
             <p className="text-xs text-slate-500">
-              Eksekusi nyata terhadap kontrol RBAC/IDOR, SQLi, XSS, kebocoran secret, smart contract guard, audit nilai, dan deteksi manipulasi
+              {t.tests.subtitle}
             </p>
           </div>
         </div>
@@ -82,12 +82,12 @@ export const SecurityTestCenter: React.FC = () => {
           {running ? (
             <>
               <RefreshCw className="w-4 h-4 animate-spin" />
-              <span>Mengeksekusi Pengujian...</span>
+              <span>{t.tests.running}</span>
             </>
           ) : (
             <>
               <Play className="w-4 h-4 fill-white" />
-              <span>Jalankan Semua Pengujian Keamanan</span>
+              <span>{t.tests.runAll}</span>
             </>
           )}
         </button>
@@ -97,26 +97,26 @@ export const SecurityTestCenter: React.FC = () => {
       {report && (
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <div className="bg-white border border-slate-200 p-4 rounded-2xl shadow-xs">
-            <span className="text-xs text-slate-500 block mb-1">Total Skenario Uji</span>
-            <span className="text-2xl font-bold font-mono text-slate-800">{report.summary.total} Test</span>
+            <span className="text-xs text-slate-500 block mb-1">{t.tests.totalScenarios}</span>
+            <span className="text-2xl font-bold font-mono text-slate-800">{report.summary.total} {language === 'id' ? 'Tes' : 'Tests'}</span>
           </div>
 
           <div className="bg-white border border-emerald-200 p-4 rounded-2xl shadow-xs">
-            <span className="text-xs text-emerald-700 font-semibold block mb-1">Lolos Pengujian</span>
+            <span className="text-xs text-emerald-700 font-semibold block mb-1">{t.tests.passed}</span>
             <span className="text-2xl font-bold font-mono text-emerald-700">
               {report.summary.passed} PASSED
             </span>
           </div>
 
           <div className="bg-white border border-rose-200 p-4 rounded-2xl shadow-xs">
-            <span className="text-xs text-rose-700 font-semibold block mb-1">Gagal Pengujian</span>
+            <span className="text-xs text-rose-700 font-semibold block mb-1">{t.tests.failed}</span>
             <span className="text-2xl font-bold font-mono text-rose-700">
               {report.summary.failed} FAILED
             </span>
           </div>
 
           <div className="bg-white border border-slate-200 p-4 rounded-2xl shadow-xs">
-            <span className="text-xs text-slate-500 block mb-1">Integritas Keamanan</span>
+            <span className="text-xs text-slate-500 block mb-1">{t.tests.integrityScore}</span>
             <span className="text-2xl font-bold font-mono text-blue-600">
               {Math.round((report.summary.passed / report.summary.total) * 100)}%
             </span>
@@ -137,7 +137,7 @@ export const SecurityTestCenter: React.FC = () => {
                   : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200 shadow-xs'
               }`}
             >
-              {cat}
+              {cat === 'ALL' ? (language === 'id' ? 'SEMUA' : 'ALL') : cat}
             </button>
           ))}
         </div>
@@ -209,7 +209,7 @@ export const SecurityTestCenter: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div className="bg-white p-3 rounded-xl border border-slate-200 space-y-1">
                         <span className="text-slate-500 font-bold block text-[10px]">
-                          EXPECTED OUTCOME (Persyaratan {test.requirementId})
+                          EXPECTED OUTCOME ({language === 'id' ? `Persyaratan ${test.requirementId}` : `Requirement ${test.requirementId}`})
                         </span>
                         <p className="text-emerald-700 font-mono text-[11px] font-semibold">{test.expectedResult}</p>
                       </div>
@@ -240,9 +240,13 @@ export const SecurityTestCenter: React.FC = () => {
             <Lock className="w-8 h-8" />
           </div>
           <div className="max-w-md mx-auto space-y-1">
-            <h3 className="text-base font-bold text-slate-800">Suite Pengujian Keamanan Siap Dijalankan</h3>
+            <h3 className="text-base font-bold text-slate-800">
+              {language === 'id' ? 'Suite Pengujian Keamanan Siap Dijalankan' : 'Security Verification Suite Ready'}
+            </h3>
             <p className="text-xs text-slate-500">
-              Klik tombol di atas untuk menjalankan pengujian otomatis terhadap API backend, smart contract anti-duplicate guard, RBAC/IDOR denial, dan verifikasi hash dokumen.
+              {language === 'id'
+                ? 'Klik tombol di atas untuk menjalankan pengujian otomatis terhadap API backend, smart contract anti-duplicate guard, RBAC/IDOR denial, dan verifikasi hash dokumen.'
+                : 'Click the button above to execute automated tests against backend API controls, smart contract anti-duplicate guard, RBAC/IDOR denial, and document hash verification.'}
             </p>
           </div>
         </div>

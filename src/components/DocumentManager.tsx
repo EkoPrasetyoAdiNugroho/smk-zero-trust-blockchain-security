@@ -16,6 +16,7 @@ import {
 import { api, calculateClientSha256, readFileAsArrayBuffer } from '../api';
 import { DocumentRecord, User, Student } from '../types';
 import { AnimatedCheckmark } from './AnimatedCheckmark';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface DocumentManagerProps {
   currentUser: User | null;
@@ -28,6 +29,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
   onOpenPreview,
   onVerifyInPortal,
 }) => {
+  const { t, language } = useLanguage();
   const [documents, setDocuments] = useState<DocumentRecord[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,14 +64,14 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
       if (docsRes.ok && docsRes.data?.data) {
         setDocuments(docsRes.data.data);
       } else if (!docsRes.ok) {
-        setFetchError(docsRes.message || 'Gagal memuat daftar dokumen.');
+        setFetchError(docsRes.message || (language === 'id' ? 'Gagal memuat daftar dokumen.' : 'Failed to load document list.'));
       }
       if (studentsRes.ok && studentsRes.data?.data) {
         setStudents(studentsRes.data.data);
       }
     } catch (err: any) {
       console.error(err);
-      setFetchError('Gagal terhubung ke server.');
+      setFetchError(language === 'id' ? 'Gagal terhubung ke server.' : 'Failed to connect to server.');
     } finally {
       setLoading(false);
     }
@@ -82,7 +84,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
   const handleCreateDocument = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStudentId || !docNumber || !docTitle) {
-      setUploadError('Lengkapi semua kolom formulir.');
+      setUploadError(language === 'id' ? 'Lengkapi semua kolom formulir.' : 'Please fill in all form fields.');
       return;
     }
 
@@ -115,10 +117,10 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
         setComputedFileHash(null);
         fetchDocs();
       } else {
-        setUploadError(res.message || 'Gagal mengunggah draf dokumen.');
+        setUploadError(res.message || (language === 'id' ? 'Gagal mengunggah draf dokumen.' : 'Failed to upload document draft.'));
       }
     } catch (err: any) {
-      setUploadError(err.message || 'Terjadi kesalahan sistem.');
+      setUploadError(err.message || (language === 'id' ? 'Terjadi kesalahan sistem.' : 'System error occurred.'));
     } finally {
       setUploading(false);
     }
@@ -142,10 +144,10 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
           fetchDocs();
         }, 950);
       } else {
-        setSignError(res.message || 'Gagal menerbitkan sertifikat on-chain.');
+        setSignError(res.message || (language === 'id' ? 'Gagal menerbitkan sertifikat on-chain.' : 'Failed to issue certificate on-chain.'));
       }
     } catch (err: any) {
-      setSignError(err.message || 'Terjadi kesalahan penerbitan.');
+      setSignError(err.message || (language === 'id' ? 'Terjadi kesalahan penerbitan.' : 'An issuance error occurred.'));
     } finally {
       setSigning(false);
     }
@@ -161,10 +163,12 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
         <div>
           <h2 className="text-xl font-bold text-slate-800 flex items-center space-x-2">
             <FileCheck className="w-5 h-5 text-blue-600" />
-            <span>Manajemen Ijazah, Transkrip & Otorisasi Digital</span>
+            <span>{t.documents.title}</span>
           </h2>
           <p className="text-xs text-slate-500">
-            Alur penerbitan: Draf TU → Otorisasi & Tanda Tangan Digital Kepala Sekolah → Smart Contract Minting
+            {language === 'id'
+              ? 'Alur penerbitan: Draf TU → Otorisasi & Tanda Tangan Digital Kepala Sekolah → Smart Contract Minting'
+              : 'Issuance pipeline: TU Staff Draft → Principal Digital Authorization & Sign → Smart Contract Minting'}
           </p>
         </div>
 
@@ -180,7 +184,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
             className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all flex items-center space-x-2 self-start sm:self-auto"
           >
             <Plus className="w-4 h-4" />
-            <span>Unggah Draf Dokumen Baru</span>
+            <span>{t.documents.uploadDraft}</span>
           </button>
         )}
       </div>
@@ -197,20 +201,20 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
         {loading ? (
           <div className="p-12 text-center text-slate-500 flex flex-col items-center space-y-2">
             <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
-            <span className="text-xs">Memuat dokumen...</span>
+            <span className="text-xs">{t.common.loading}...</span>
           </div>
         ) : documents.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 text-xs">Belum ada dokumen yang terdaftar.</div>
+          <div className="p-12 text-center text-slate-500 text-xs">{t.documents.empty}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-700">
               <thead className="bg-slate-50 text-slate-600 uppercase font-semibold border-b border-slate-200 text-[10px] tracking-wider">
                 <tr>
-                  <th className="px-5 py-3.5">Jenis & Nomor Dokumen</th>
-                  <th className="px-5 py-3.5">Nama Siswa / NISN</th>
-                  <th className="px-5 py-3.5">Status Penerbitan</th>
-                  <th className="px-5 py-3.5">Hash SHA-256</th>
-                  <th className="px-5 py-3.5 text-right">Aksi</th>
+                  <th className="px-5 py-3.5">{t.documents.tableDoc}</th>
+                  <th className="px-5 py-3.5">{t.documents.tableStudent}</th>
+                  <th className="px-5 py-3.5">{t.documents.tableStatus}</th>
+                  <th className="px-5 py-3.5">{t.documents.tableHash}</th>
+                  <th className="px-5 py-3.5 text-right">{t.documents.tableActions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
@@ -233,12 +237,12 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                         {isIssued ? (
                           <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-semibold">
                             <CheckCircle2 className="w-3 h-3" />
-                            <span>ISSUED (Blok #{doc.blockNumber || 1})</span>
+                            <span>{t.documents.statusIssued} ({language === 'id' ? `Blok #${doc.blockNumber || 1}` : `Block #${doc.blockNumber || 1}`})</span>
                           </span>
                         ) : (
                           <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-[11px] font-semibold">
                             <Clock className="w-3 h-3" />
-                            <span>DRAFT (Menunggu TTD Kepsek)</span>
+                            <span>{t.documents.statusDraft}</span>
                           </span>
                         )}
                       </td>
@@ -254,7 +258,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                           className="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors inline-flex items-center space-x-1 border border-slate-200 shadow-xs"
                         >
                           <Eye className="w-3.5 h-3.5 text-slate-500" />
-                          <span>Pratinjau</span>
+                          <span>{t.documents.preview}</span>
                         </button>
 
                         {!isIssued && isKepsek && (
@@ -268,7 +272,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                             className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all inline-flex items-center space-x-1"
                           >
                             <ShieldCheck className="w-3.5 h-3.5" />
-                            <span>Setujui & TTD On-Chain</span>
+                            <span>{t.documents.signIssue}</span>
                           </button>
                         )}
                       </td>
@@ -287,7 +291,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
           <div id="upload-doc-modal-container" className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 text-slate-800 relative">
             <h3 className="text-base font-bold text-slate-800 flex items-center space-x-2">
               <Upload className="w-5 h-5 text-blue-600" />
-              <span>Unggah Draf Dokumen Kelulusan Baru</span>
+              <span>{language === 'id' ? 'Unggah Draf Dokumen Kelulusan Baru' : 'Upload New Graduation Document Draft'}</span>
             </h3>
 
             {uploadError && (
@@ -299,7 +303,9 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
 
             <form onSubmit={handleCreateDocument} className="space-y-4 text-xs">
               <div>
-                <label className="font-bold text-slate-700 mb-1 block">Pilih Siswa Penerima</label>
+                <label className="font-bold text-slate-700 mb-1 block">
+                  {language === 'id' ? 'Pilih Siswa Penerima' : 'Select Recipient Student'}
+                </label>
                 <select
                   id="select-student-doc"
                   value={selectedStudentId}
@@ -313,7 +319,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                   className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-800 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 font-medium"
                   required
                 >
-                  <option value="">-- Pilih Siswa --</option>
+                  <option value="">-- {language === 'id' ? 'Pilih Siswa' : 'Select Student'} --</option>
                   {students.map((st) => (
                     <option key={st.id} value={st.id}>
                       {st.fullName} (NISN: {st.nisn}) — {st.className}
@@ -324,19 +330,23 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-slate-700 mb-1 block">Jenis Dokumen</label>
+                  <label className="font-bold text-slate-700 mb-1 block">
+                    {language === 'id' ? 'Jenis Dokumen' : 'Document Type'}
+                  </label>
                   <select
                     value={docType}
                     onChange={(e) => setDocType(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-800 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 font-medium"
                   >
-                    <option value="IJAZAH">Ijazah Kelulusan</option>
-                    <option value="TRANSKRIP">Transkrip Nilai</option>
+                    <option value="IJAZAH">{language === 'id' ? 'Ijazah Kelulusan' : 'Graduation Diploma'}</option>
+                    <option value="TRANSKRIP">{language === 'id' ? 'Transkrip Nilai' : 'Academic Transcript'}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 mb-1 block">Nomor Dokumen</label>
+                  <label className="font-bold text-slate-700 mb-1 block">
+                    {language === 'id' ? 'Nomor Dokumen' : 'Document Number'}
+                  </label>
                   <input
                     type="text"
                     value={docNumber}
@@ -348,7 +358,9 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 mb-1 block">Judul Dokumen</label>
+                <label className="font-bold text-slate-700 mb-1 block">
+                  {language === 'id' ? 'Judul Dokumen' : 'Document Title'}
+                </label>
                 <input
                   type="text"
                   value={docTitle}
@@ -360,7 +372,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
 
               <div>
                 <label className="font-bold text-slate-700 mb-1 block">
-                  File Dokumen PDF (Opsional - Hash otomatis dihitung)
+                  {language === 'id' ? 'File Dokumen PDF (Opsional - Hash otomatis dihitung)' : 'PDF Document File (Optional - Auto Hash Calculation)'}
                 </label>
                 <input
                   type="file"
@@ -388,14 +400,14 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                 {calculatingHash && (
                   <p className="text-[11px] text-blue-600 mt-1.5 flex items-center space-x-1 font-mono">
                     <RefreshCw className="w-3 h-3 animate-spin" />
-                    <span>Menghitung sidik jari SHA-256...</span>
+                    <span>{language === 'id' ? 'Menghitung sidik jari SHA-256...' : 'Calculating SHA-256 fingerprint...'}</span>
                   </p>
                 )}
                 {computedFileHash && !calculatingHash && (
                   <div className="mt-2 p-2.5 bg-blue-50 border border-blue-200 rounded-xl text-xs space-y-1">
                     <div className="flex items-center space-x-1.5 text-blue-800 font-semibold">
                       <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
-                      <span>Hash Dokumen Asli Terdeteksi (SHA-256):</span>
+                      <span>{language === 'id' ? 'Hash Dokumen Asli Terdeteksi (SHA-256):' : 'Original Document SHA-256 Detected:'}</span>
                     </div>
                     <p className="font-mono text-[11px] text-blue-900 break-all select-all font-bold">
                       {computedFileHash}
@@ -410,7 +422,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                   onClick={() => setShowUploadModal(false)}
                   className="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold transition-colors"
                 >
-                  Batal
+                  {t.common.cancel}
                 </button>
                 <button
                   id="submit-draft-doc-btn"
@@ -419,7 +431,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                   className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md shadow-blue-600/20 disabled:opacity-50 transition-all flex items-center justify-center space-x-1.5"
                 >
                   {uploading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                  <span>Simpan Draf Dokumen</span>
+                  <span>{language === 'id' ? 'Simpan Draf Dokumen' : 'Save Document Draft'}</span>
                 </button>
               </div>
             </form>
@@ -436,13 +448,17 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                 <ShieldCheck className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-900">Otorisasi Kelulusan & TTD Digital</h3>
-                <p className="text-[11px] text-blue-600 font-semibold">Penerbitan Smart Contract Blockchain</p>
+                <h3 className="text-base font-bold text-slate-900">
+                  {language === 'id' ? 'Otorisasi Kelulusan & TTD Digital' : 'Graduation Authorization & Digital Sign'}
+                </h3>
+                <p className="text-[11px] text-blue-600 font-semibold">
+                  {language === 'id' ? 'Penerbitan Smart Contract Blockchain' : 'Blockchain Smart Contract Issuance'}
+                </p>
               </div>
             </div>
 
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs">
-              <p className="text-slate-500">Dokumen yang akan ditandatangani:</p>
+              <p className="text-slate-500">{language === 'id' ? 'Dokumen yang akan ditandatangani:' : 'Document to be signed:'}</p>
               <p className="font-bold text-slate-900 text-sm">{showSignModal.title}</p>
               <p className="font-mono text-blue-600 font-semibold">NISN: {showSignModal.studentNisn}</p>
               <p className="font-mono text-slate-500 truncate" title={showSignModal.fileHash}>
@@ -460,7 +476,9 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
             <form onSubmit={handleAuthorizeAndIssue} className="space-y-4">
               <div>
                 <label className="text-xs font-bold text-slate-700 mb-1 block">
-                  Konfirmasi Kode TOTP Kepala Sekolah (Opsional bila sudah login MFA):
+                  {language === 'id'
+                    ? 'Konfirmasi Kode TOTP Kepala Sekolah (Opsional bila sudah login MFA):'
+                    : 'Confirm Principal TOTP Code (Optional if MFA already authenticated):'}
                 </label>
                 <div className="relative">
                   <input
@@ -482,7 +500,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                   disabled={signVerified}
                   className="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold disabled:opacity-40 transition-colors"
                 >
-                  Batal
+                  {t.common.cancel}
                 </button>
                 <button
                   id="confirm-sign-issue-btn"
@@ -497,17 +515,19 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                   {signVerified ? (
                     <>
                       <AnimatedCheckmark size={18} strokeColor="#FFFFFF" className="w-4 h-4" />
-                      <span className="font-semibold tracking-wide">Kredensial & TTD Terverifikasi!</span>
+                      <span className="font-semibold tracking-wide">
+                        {language === 'id' ? 'Kredensial & TTD Terverifikasi!' : 'Credentials & Signature Verified!'}
+                      </span>
                     </>
                   ) : signing ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Menerbitkan on-chain...</span>
+                      <span>{language === 'id' ? 'Menerbitkan on-chain...' : 'Issuing on-chain...'}</span>
                     </>
                   ) : (
                     <>
                       <Cpu className="w-4 h-4" />
-                      <span>Tandatangani & Terbitkan</span>
+                      <span>{language === 'id' ? 'Tandatangani & Terbitkan' : 'Sign & Issue On-Chain'}</span>
                     </>
                   )}
                 </button>

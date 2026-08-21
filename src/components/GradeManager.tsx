@@ -9,16 +9,17 @@ import {
   Cpu,
   Save,
   X,
-  Sparkles,
 } from 'lucide-react';
 import { api } from '../api';
 import { Grade, User } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface GradeManagerProps {
   currentUser: User | null;
 }
 
 export const GradeManager: React.FC<GradeManagerProps> = ({ currentUser }) => {
+  const { t, language } = useLanguage();
   const [grades, setGrades] = useState<Grade[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'list' | 'audit'>('list');
@@ -60,12 +61,16 @@ export const GradeManager: React.FC<GradeManagerProps> = ({ currentUser }) => {
     if (!editingGrade) return;
 
     if (newScore < 0 || newScore > 100) {
-      setError('Nilai harus berada pada rentang 0 - 100.');
+      setError(language === 'id' ? 'Nilai harus berada pada rentang 0 - 100.' : 'Grade score must be between 0 and 100.');
       return;
     }
 
     if (!reason.trim() || reason.trim().length < 5) {
-      setError('Alasan perubahan nilai wajib diisi secara jelas (minimal 5 karakter) untuk kepatuhan audit.');
+      setError(
+        language === 'id'
+          ? 'Alasan perubahan nilai wajib diisi secara jelas (minimal 5 karakter) untuk kepatuhan audit.'
+          : 'Reason for grade update is mandatory (min 5 characters) for audit compliance.'
+      );
       return;
     }
 
@@ -89,10 +94,10 @@ export const GradeManager: React.FC<GradeManagerProps> = ({ currentUser }) => {
           setEditingGrade(null);
         }, 3500);
       } else {
-        setError(res.message || 'Gagal memperbarui nilai.');
+        setError(res.message || (language === 'id' ? 'Gagal memperbarui nilai.' : 'Failed to update grade.'));
       }
     } catch (err: any) {
-      setError(err.message || 'Terjadi kesalahan sistem.');
+      setError(err.message || (language === 'id' ? 'Terjadi kesalahan sistem.' : 'System error occurred.'));
     } finally {
       setUpdating(false);
     }
@@ -107,10 +112,12 @@ export const GradeManager: React.FC<GradeManagerProps> = ({ currentUser }) => {
         <div>
           <h2 className="text-xl font-bold text-slate-800 flex items-center space-x-2">
             <GraduationCap className="w-5 h-5 text-blue-600" />
-            <span>Manajemen Nilai & Jejak Audit Blockchain</span>
+            <span>{t.grades.title}</span>
           </h2>
           <p className="text-xs text-slate-500">
-            Setiap pembaruan nilai mewajibkan alasan perubahan dan secara otomatis di-anchor ke smart contract blockchain
+            {language === 'id'
+              ? 'Setiap pembaruan nilai mewajibkan alasan perubahan dan secara otomatis di-anchor ke smart contract blockchain'
+              : 'Every grade change requires justification and is automatically anchored to the blockchain smart contract'}
           </p>
         </div>
 
@@ -123,7 +130,7 @@ export const GradeManager: React.FC<GradeManagerProps> = ({ currentUser }) => {
                 : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200 shadow-xs'
             }`}
           >
-            Daftar Nilai Siswa
+            {t.grades.tabList}
           </button>
           <button
             onClick={() => setActiveTab('audit')}
@@ -134,7 +141,7 @@ export const GradeManager: React.FC<GradeManagerProps> = ({ currentUser }) => {
             }`}
           >
             <History className="w-3.5 h-3.5" />
-            <span>Riwayat Audit Blockchain</span>
+            <span>{t.grades.tabAudit}</span>
           </button>
         </div>
       </div>
@@ -145,21 +152,21 @@ export const GradeManager: React.FC<GradeManagerProps> = ({ currentUser }) => {
           {loading ? (
             <div className="p-12 text-center text-slate-500 flex flex-col items-center space-y-2">
               <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
-              <span className="text-xs">Memuat daftar nilai...</span>
+              <span className="text-xs">{t.common.loading}...</span>
             </div>
           ) : grades.length === 0 ? (
-            <div className="p-12 text-center text-slate-500 text-xs">Belum ada data nilai.</div>
+            <div className="p-12 text-center text-slate-500 text-xs">{t.grades.empty}</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-700">
                 <thead className="bg-slate-50 text-slate-600 uppercase font-semibold border-b border-slate-200 text-[10px] tracking-wider">
                   <tr>
-                    <th className="px-5 py-3.5">Nama Siswa / NISN</th>
-                    <th className="px-5 py-3.5">Mata Pelajaran</th>
-                    <th className="px-5 py-3.5">Semester & TA</th>
-                    <th className="px-5 py-3.5">Guru Pengampu</th>
-                    <th className="px-5 py-3.5 text-center">Nilai Angka</th>
-                    {isTeacherOrTu && <th className="px-5 py-3.5 text-right">Aksi</th>}
+                    <th className="px-5 py-3.5">{t.grades.tableStudent}</th>
+                    <th className="px-5 py-3.5">{t.grades.tableSubject}</th>
+                    <th className="px-5 py-3.5">{t.grades.tableSemester}</th>
+                    <th className="px-5 py-3.5">{t.grades.tableTeacher}</th>
+                    <th className="px-5 py-3.5 text-center">{t.grades.tableScore}</th>
+                    {isTeacherOrTu && <th className="px-5 py-3.5 text-right">{t.grades.tableActions}</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium">
@@ -187,7 +194,7 @@ export const GradeManager: React.FC<GradeManagerProps> = ({ currentUser }) => {
                             className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors inline-flex items-center space-x-1 shadow-xs"
                           >
                             <Edit3 className="w-3.5 h-3.5 text-slate-500" />
-                            <span>Koreksi</span>
+                            <span>{t.grades.editScore}</span>
                           </button>
                         </td>
                       )}
@@ -203,7 +210,7 @@ export const GradeManager: React.FC<GradeManagerProps> = ({ currentUser }) => {
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
           <div className="flex items-center space-x-2 text-xs font-bold text-blue-700">
             <Cpu className="w-4 h-4 text-blue-600" />
-            <span>Catatan Bukti Kriptografis Perubahan Nilai pada Smart Contract</span>
+            <span>{language === 'id' ? 'Catatan Bukti Kriptografis Perubahan Nilai pada Smart Contract' : 'Cryptographic Proof of Grade Changes on Smart Contract'}</span>
           </div>
 
           <div className="space-y-3">
@@ -215,13 +222,17 @@ export const GradeManager: React.FC<GradeManagerProps> = ({ currentUser }) => {
                 </span>
               </div>
               <p className="text-slate-600">
-                Nilai dikoreksi dari <strong className="text-amber-700">92</strong> menjadi <strong className="text-emerald-700">95</strong>
+                {language === 'id' ? 'Nilai dikoreksi dari ' : 'Score adjusted from '}
+                <strong className="text-amber-700">92</strong> {language === 'id' ? 'menjadi ' : 'to '}
+                <strong className="text-emerald-700">95</strong>
               </p>
               <p className="text-slate-700 italic bg-white p-2.5 rounded-lg border border-slate-200 text-[11px]">
-                Alasan: "Koreksi nilai remedial praktikum clustering server & konfigurasi firewall perimeter."
+                {language === 'id'
+                  ? 'Alasan: "Koreksi nilai remedial praktikum clustering server & konfigurasi firewall perimeter."'
+                  : 'Reason: "Remedial score correction for server clustering and perimeter firewall configuration lab."'}
               </p>
               <div className="pt-2 text-[10px] font-mono text-slate-500 break-all space-y-1 border-t border-slate-200">
-                <p>Pengubah: Drs. H. Bambang Subagyo, M.Kom</p>
+                <p>{language === 'id' ? 'Pengubah: ' : 'Modifier: '}Drs. H. Bambang Subagyo, M.Kom</p>
                 <p>
                   TxHash: <span className="text-blue-600 font-bold">0x8f4d92a1c7b3e5f609123456789abcdef0123456789abcdef0123456789abcde</span>
                 </p>
@@ -237,7 +248,7 @@ export const GradeManager: React.FC<GradeManagerProps> = ({ currentUser }) => {
           <div id="edit-grade-modal-container" className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-2xl text-slate-800 relative space-y-4">
             <div className="flex items-start justify-between border-b border-slate-200 pb-3">
               <div>
-                <h3 className="text-base font-bold text-slate-900">Koreksi Nilai Akademik</h3>
+                <h3 className="text-base font-bold text-slate-900">{t.grades.editScore}</h3>
                 <p className="text-xs text-blue-600 font-semibold">{editingGrade.subject} — {editingGrade.studentName}</p>
               </div>
               <button
@@ -252,10 +263,12 @@ export const GradeManager: React.FC<GradeManagerProps> = ({ currentUser }) => {
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 space-y-2 text-xs text-emerald-800">
                 <div className="flex items-center space-x-2 text-emerald-700 font-bold">
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Nilai Berhasil Diperbarui & Tercatat On-Chain!</span>
+                  <span>{language === 'id' ? 'Nilai Berhasil Diperbarui & Tercatat On-Chain!' : 'Grade Updated & Recorded On-Chain!'}</span>
                 </div>
                 <p className="text-[11px] text-emerald-700">
-                  Perubahan nilai telah di-anchor secara permanen ke smart contract blockchain konsorsium.
+                  {language === 'id'
+                    ? 'Perubahan nilai telah di-anchor secara permanen ke smart contract blockchain konsorsium.'
+                    : 'The grade modification has been permanently anchored to the consortium smart contract.'}
                 </p>
                 <div className="bg-white p-2.5 rounded-lg border border-emerald-200 text-[10px] font-mono break-all text-slate-800">
                   <span className="text-slate-500">TxHash: </span>
@@ -273,7 +286,7 @@ export const GradeManager: React.FC<GradeManagerProps> = ({ currentUser }) => {
 
                 <div>
                   <label className="text-xs font-bold text-slate-700 mb-1 block">
-                    Nilai Baru (0 - 100) <span className="text-slate-500 font-mono font-normal">(Nilai Saat Ini: {editingGrade.score})</span>
+                    {t.grades.newScoreLabel} <span className="text-slate-500 font-mono font-normal">({language === 'id' ? 'Nilai Saat Ini: ' : 'Current Score: '}{editingGrade.score})</span>
                   </label>
                   <input
                     id="new-score-input"
@@ -289,19 +302,21 @@ export const GradeManager: React.FC<GradeManagerProps> = ({ currentUser }) => {
 
                 <div>
                   <label className="text-xs font-bold text-slate-700 mb-1 block">
-                    Alasan Perubahan Nilai <span className="text-rose-600">* (Wajib Audit)</span>
+                    {t.grades.reasonLabel} <span className="text-rose-600">* ({language === 'id' ? 'Wajib Audit' : 'Audit Mandatory'})</span>
                   </label>
                   <textarea
                     id="grade-change-reason-input"
                     rows={3}
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
-                    placeholder="Contoh: Koreksi nilai remedial tugas akhir praktikum..."
+                    placeholder={language === 'id' ? 'Contoh: Koreksi nilai remedial tugas akhir praktikum...' : 'E.g.: Remedial score adjustment for final lab assignment...'}
                     className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20"
                     required
                   />
                   <p className="text-[10px] text-slate-500 mt-1">
-                    Alasan ini akan disimpan di basis data audit dan hash ringkasannya dicatat ke blockchain.
+                    {language === 'id'
+                      ? 'Alasan ini akan disimpan di basis data audit dan hash ringkasannya dicatat ke blockchain.'
+                      : 'This reason will be stored in audit records and its hash summary recorded to the blockchain.'}
                   </p>
                 </div>
 
@@ -311,7 +326,7 @@ export const GradeManager: React.FC<GradeManagerProps> = ({ currentUser }) => {
                     onClick={() => setEditingGrade(null)}
                     className="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors"
                   >
-                    Batal
+                    {t.common.cancel}
                   </button>
                   <button
                     id="submit-grade-change-btn"
@@ -322,12 +337,12 @@ export const GradeManager: React.FC<GradeManagerProps> = ({ currentUser }) => {
                     {updating ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Mencatat ke Blockchain...</span>
+                        <span>{language === 'id' ? 'Mencatat ke Blockchain...' : 'Recording to Blockchain...'}</span>
                       </>
                     ) : (
                       <>
                         <Save className="w-4 h-4" />
-                        <span>Simpan & Anchor</span>
+                        <span>{t.grades.saveAnchor}</span>
                       </>
                     )}
                   </button>

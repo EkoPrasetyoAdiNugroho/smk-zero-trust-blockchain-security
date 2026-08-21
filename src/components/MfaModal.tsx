@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Key, RefreshCw, AlertCircle, Copy, Check } from 'lucide-react';
 import QRCode from 'qrcode';
 import { AnimatedCheckmark } from './AnimatedCheckmark';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface MfaModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export const MfaModal: React.FC<MfaModalProps> = ({
   user,
   onVerifyMfa,
 }) => {
+  const { t, language } = useLanguage();
   const [code, setCode] = useState('');
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +60,7 @@ export const MfaModal: React.FC<MfaModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (code.length !== 6) {
-      setError('Masukkan 6 digit kode autentikasi.');
+      setError(t.mfa.enterCode);
       return;
     }
 
@@ -74,10 +76,10 @@ export const MfaModal: React.FC<MfaModalProps> = ({
           setIsVerified(false);
         }, 950);
       } else {
-        setError(res.message || 'Kode TOTP salah atau kedaluwarsa.');
+        setError(res.message || t.mfa.invalidCode);
       }
     } catch (err: any) {
-      setError(err.message || 'Terjadi kesalahan sistem.');
+      setError(err.message || (language === 'id' ? 'Terjadi kesalahan sistem.' : 'System error occurred.'));
     } finally {
       setLoading(false);
     }
@@ -97,13 +99,21 @@ export const MfaModal: React.FC<MfaModalProps> = ({
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900">Verifikasi Multi-Factor MFA</h3>
-            <p className="text-xs text-slate-500">Zero Trust Security Mandatory Policy</p>
+            <h3 className="text-lg font-bold text-slate-900">{t.mfa.title}</h3>
+            <p className="text-xs text-slate-500">{t.mfa.subtitle}</p>
           </div>
         </div>
 
         <p className="text-xs text-slate-600 mb-4 leading-relaxed">
-          Akun <span className="text-blue-700 font-bold">{user?.fullName || user?.role}</span> memiliki hak istimewa administratif. Pindai kode QR menggunakan Google Authenticator, Authy, atau masukkan secret key.
+          {language === 'id' ? (
+            <>
+              Akun <span className="text-blue-700 font-bold">{user?.fullName || user?.role}</span> memiliki hak istimewa administratif. Pindai kode QR menggunakan Google Authenticator, Authy, atau masukkan secret key.
+            </>
+          ) : (
+            <>
+              Account <span className="text-blue-700 font-bold">{user?.fullName || user?.role}</span> holds elevated administrative privileges. Scan the QR code using Google Authenticator, Authy, or copy the secret key.
+            </>
+          )}
         </p>
 
         {/* QR Code & Key Box */}
@@ -127,7 +137,7 @@ export const MfaModal: React.FC<MfaModalProps> = ({
               type="button"
               onClick={copySecret}
               className="text-slate-500 hover:text-blue-600 transition-colors p-1"
-              title="Salin Secret Key"
+              title={language === 'id' ? 'Salin Secret Key' : 'Copy Secret Key'}
             >
               {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
             </button>
@@ -144,9 +154,9 @@ export const MfaModal: React.FC<MfaModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <div className="flex justify-between items-center mb-1.5">
-              <label className="text-xs font-bold text-slate-700">Kode Otentikasi 6 Digit</label>
+              <label className="text-xs font-bold text-slate-700">{t.mfa.codeLabel}</label>
               <span className="text-[11px] text-slate-500 font-mono">
-                Refresh dalam <span className="text-blue-600 font-bold">{timeLeft}s</span>
+                {t.mfa.refreshIn} <span className="text-blue-600 font-bold">{timeLeft}s</span>
               </span>
             </div>
             <input
@@ -169,7 +179,7 @@ export const MfaModal: React.FC<MfaModalProps> = ({
               disabled={isVerified}
               className="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold transition-colors disabled:opacity-40"
             >
-              Batal
+              {t.common.cancel}
             </button>
             <button
               id="mfa-verify-btn"
@@ -184,17 +194,17 @@ export const MfaModal: React.FC<MfaModalProps> = ({
               {isVerified ? (
                 <>
                   <AnimatedCheckmark size={18} strokeColor="#FFFFFF" className="w-4 h-4" />
-                  <span className="font-semibold tracking-wide">Kredensial Terverifikasi!</span>
+                  <span className="font-semibold tracking-wide">{t.mfa.verified}</span>
                 </>
               ) : loading ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Memverifikasi...</span>
+                  <span>{t.mfa.verifying}</span>
                 </>
               ) : (
                 <>
                   <ShieldCheck className="w-4 h-4" />
-                  <span>Verifikasi & Masuk</span>
+                  <span>{t.mfa.verifyBtn}</span>
                 </>
               )}
             </button>

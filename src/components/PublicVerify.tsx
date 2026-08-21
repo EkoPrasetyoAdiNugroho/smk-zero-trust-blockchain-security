@@ -15,6 +15,7 @@ import {
   Award,
 } from 'lucide-react';
 import { api, calculateClientSha256, readFileAsArrayBuffer } from '../api';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface PublicVerifyProps {
   initialHash?: string;
@@ -25,6 +26,7 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
   initialHash = '',
   onOpenPreview,
 }) => {
+  const { t, language } = useLanguage();
   const [hashInput, setHashInput] = useState(initialHash);
   const [fileName, setFileName] = useState('');
   const [fileSize, setFileSize] = useState<number | null>(null);
@@ -55,14 +57,14 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
         setResult({
           status: 'INVALID',
           queriedHash: targetHash,
-          error: res.message || 'Dokumen tidak valid atau belum terdaftar di blockchain.',
+          error: res.message || (language === 'id' ? 'Dokumen tidak valid atau belum terdaftar di blockchain.' : 'Document is invalid or not yet registered on blockchain.'),
         });
       }
     } catch (err: any) {
       setResult({
         status: 'INVALID',
         queriedHash: targetHash,
-        error: err.message || 'Gagal menghubungi validator blockchain konsorsium.',
+        error: err.message || (language === 'id' ? 'Gagal menghubungi validator blockchain konsorsium.' : 'Failed to reach consortium blockchain validators.'),
       });
     } finally {
       setLoading(false);
@@ -86,7 +88,7 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
       setHashInput(hash);
       await handleVerify(hash);
     } catch (err: any) {
-      alert('Gagal membaca file untuk hashing: ' + err.message);
+      alert('Error calculating hash: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -96,14 +98,14 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
     let hash = '';
     if (type === 'AUTHENTIC_IJAZAH') {
       hash = 'a3f789bcde41209384756192837465abc12345def67890123456789abcdef012';
-      setFileName('Ijazah_SMK_Budi_Santoso_2026.pdf (Sample Dokumen Sah)');
+      setFileName(language === 'id' ? 'Ijazah_SMK_Budi_Santoso_2026.pdf (Sample Dokumen Sah)' : 'Diploma_SMK_Budi_Santoso_2026.pdf (Authentic Sample)');
     } else if (type === 'TAMPERED_IJAZAH') {
       // Changed 1 char '2' -> '3' at the end
       hash = 'a3f789bcde41209384756192837465abc12345def67890123456789abcdef013';
-      setFileName('Ijazah_SMK_Budi_Santoso_2026_TAMPERED.pdf (Sample Manipulasi 1 Karakter)');
+      setFileName(language === 'id' ? 'Ijazah_SMK_Budi_Santoso_2026_TAMPERED.pdf (Sample Manipulasi 1 Karakter)' : 'Diploma_SMK_Budi_Santoso_2026_TAMPERED.pdf (1-Char Tampered Sample)');
     } else {
       hash = 'b9c8d7e6f5a43210fedcba9876543210fedcba9876543210fedcba9876543210';
-      setFileName('Sertifikat_PKL_Budi_Santoso_NusTech.pdf (Sample Mitra DUDI)');
+      setFileName(language === 'id' ? 'Sertifikat_PKL_Budi_Santoso_NusTech.pdf (Sample Mitra DUDI)' : 'Internship_Certificate_Budi_Santoso_NusTech.pdf (Industry Partner Sample)');
     }
 
     setComputedFileHash(hash);
@@ -117,13 +119,13 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
       <div className="text-center space-y-3">
         <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold">
           <ShieldCheck className="w-4 h-4 text-blue-600" />
-          <span>Portal Verifikasi Publik EduChain</span>
+          <span>{t.nav.consortiumSecurity}</span>
         </div>
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-          Verifikasi Keabsahan Ijazah & Sertifikat PKL
+          {t.verify.title}
         </h1>
         <p className="text-sm text-slate-600 max-w-2xl mx-auto leading-relaxed">
-          Verifikasi integritas dokumen secara instan tanpa login. Sistem menghitung sidik jari kriptografis SHA-256 langsung di browser Anda dan mencocokkannya dengan buku besar blockchain konsorsium resmi.
+          {t.verify.subtitle}
         </p>
       </div>
 
@@ -131,7 +133,7 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
       <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
         <div className="flex items-center space-x-2 mb-3 text-xs font-bold text-blue-700">
           <Sparkles className="w-4 h-4 text-blue-600" />
-          <span>Simulasi Uji Klinis Integritas:</span>
+          <span>{language === 'id' ? 'Simulasi Uji Klinis Integritas:' : 'Integrity Test Simulations:'}</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <button
@@ -141,8 +143,12 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
           >
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-slate-800 group-hover:text-emerald-900">1. Ijazah Sah</p>
-              <p className="text-[11px] text-slate-500">Hash SHA-256 identik dengan blockchain</p>
+              <p className="font-bold text-slate-800 group-hover:text-emerald-900">
+                {language === 'id' ? '1. Ijazah Sah' : '1. Authentic Diploma'}
+              </p>
+              <p className="text-[11px] text-slate-500">
+                {language === 'id' ? 'Hash SHA-256 identik dengan blockchain' : 'SHA-256 hash matches blockchain ledger'}
+              </p>
             </div>
           </button>
 
@@ -153,8 +159,12 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
           >
             <XCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-slate-800 group-hover:text-rose-900">2. Ijazah Manipulasi</p>
-              <p className="text-[11px] text-rose-600">Ubah 1 karakter → terdeteksi palsu!</p>
+              <p className="font-bold text-slate-800 group-hover:text-rose-900">
+                {language === 'id' ? '2. Ijazah Manipulasi' : '2. Tampered Diploma'}
+              </p>
+              <p className="text-[11px] text-rose-600">
+                {language === 'id' ? 'Ubah 1 karakter → terdeteksi palsu!' : '1 altered character → detected fake!'}
+              </p>
             </div>
           </button>
 
@@ -165,8 +175,12 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
           >
             <Award className="w-4 h-4 text-cyan-600 shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-slate-800 group-hover:text-cyan-900">3. Sertifikat PKL DUDI</p>
-              <p className="text-[11px] text-slate-500">Tanda tangan digital Mitra Industri</p>
+              <p className="font-bold text-slate-800 group-hover:text-cyan-900">
+                {language === 'id' ? '3. Sertifikat PKL DUDI' : '3. Internship Certificate'}
+              </p>
+              <p className="text-[11px] text-slate-500">
+                {language === 'id' ? 'Tanda tangan digital Mitra Industri' : 'Industry Partner Digital Signature'}
+              </p>
             </div>
           </button>
         </div>
@@ -188,10 +202,10 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
               <Upload className="w-6 h-6" />
             </div>
             <p className="text-sm font-semibold text-slate-800">
-              Pilih Dokumen PDF Ijazah atau Sertifikat PKL untuk Dihitung Hash-nya
+              {t.verify.uploadInstruction}
             </p>
             <p className="text-xs text-slate-500">
-              Perhitungan SHA-256 diproses 100% lokal di browser Anda via WebCrypto (Zero Data Upload).
+              {t.verify.zeroUploadNotice}
             </p>
             {fileName && (
               <div className="mt-2 inline-flex items-center space-x-2 px-3 py-1 bg-white rounded-lg text-xs font-mono text-blue-700 border border-blue-200 shadow-xs">
@@ -204,14 +218,14 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
 
         <div className="flex items-center space-x-4">
           <div className="h-px bg-slate-200 flex-1" />
-          <span className="text-xs font-bold text-slate-400 uppercase">Atau Masukkan Hash Kriptografis</span>
+          <span className="text-xs font-bold text-slate-400 uppercase">{t.verify.orManualHash}</span>
           <div className="h-px bg-slate-200 flex-1" />
         </div>
 
         {/* Manual Hash Input */}
         <div className="space-y-2">
           <label className="text-xs font-bold text-slate-700">
-            Nilai Hash SHA-256 Dokumen (64 Karakter Heksadesimal):
+            {t.verify.hashLabel}
           </label>
           <div className="flex space-x-2">
             <div className="relative flex-1">
@@ -233,12 +247,12 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
               {loading ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Memverifikasi...</span>
+                  <span>{t.verify.verifying}</span>
                 </>
               ) : (
                 <>
                   <Search className="w-4 h-4" />
-                  <span>Verifikasi Keabsahan</span>
+                  <span>{t.verify.searchButton}</span>
                 </>
               )}
             </button>
@@ -260,11 +274,11 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
                   <div>
                     <div className="flex items-center space-x-2">
                       <span className="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white font-extrabold text-xs tracking-wider uppercase">
-                        DOKUMEN SAH & TERVERIFIKASI
+                        {t.verify.validBadge}
                       </span>
                     </div>
                     <h2 className="text-lg font-bold text-slate-900 mt-1">
-                      {result.record?.metadata?.title || 'Ijazah Kelulusan Resmi'}
+                      {result.record?.metadata?.title || (language === 'id' ? 'Ijazah Kelulusan Resmi' : 'Official Graduation Diploma')}
                     </h2>
                   </div>
                 </div>
@@ -274,7 +288,7 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
                     className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-colors flex items-center space-x-2 shadow-md shadow-blue-600/20"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
-                    <span>Lihat Pratinjau Dokumen</span>
+                    <span>{t.documents.preview}</span>
                   </button>
                 )}
               </div>
@@ -282,39 +296,39 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
               {/* Verified Details Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
                 <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
-                  <p className="text-slate-500">Nama Peserta Didik</p>
+                  <p className="text-slate-500">{t.verify.studentName}</p>
                   <p className="font-bold text-slate-800 text-sm">
                     {result.record?.metadata?.studentName || '-'}
                   </p>
                 </div>
                 <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
-                  <p className="text-slate-500">Nomor Induk Siswa Nasional (NISN)</p>
+                  <p className="text-slate-500">{t.verify.nisn}</p>
                   <p className="font-bold text-blue-700 font-mono text-sm">
                     {result.record?.recipientNisn || '-'}
                   </p>
                 </div>
                 <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
-                  <p className="text-slate-500">Nomor Dokumen Resmi</p>
+                  <p className="text-slate-500">{t.verify.docNumber}</p>
                   <p className="font-bold text-slate-800 font-mono text-sm">
                     {result.record?.metadata?.documentNumber || '-'}
                   </p>
                 </div>
                 <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
-                  <p className="text-slate-500">Penerbit Dokumen</p>
+                  <p className="text-slate-500">{t.verify.issuer}</p>
                   <p className="font-bold text-blue-800">
-                    {result.record?.issuerRole === 'DUDI' ? 'Mitra Industri DUDI' : 'Kepala Sekolah SMK'}
+                    {result.record?.issuerRole === 'DUDI' ? (language === 'id' ? 'Mitra Industri DUDI' : 'Industry Partner DUDI') : (language === 'id' ? 'Kepala Sekolah SMK' : 'School Principal')}
                   </p>
                 </div>
                 <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
-                  <p className="text-slate-500">Waktu Penerbitan On-Chain</p>
+                  <p className="text-slate-500">{t.verify.issuedAt}</p>
                   <p className="font-bold text-slate-800 font-mono">
-                    {new Date(result.record?.timestamp || Date.now()).toLocaleString('id-ID')}
+                    {new Date(result.record?.timestamp || Date.now()).toLocaleString(language === 'id' ? 'id-ID' : 'en-US')}
                   </p>
                 </div>
                 <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
-                  <p className="text-slate-500">Nomor Blok Blockchain</p>
+                  <p className="text-slate-500">{t.verify.blockNumber}</p>
                   <p className="font-bold text-cyan-700 font-mono">
-                    Blok #{result.record?.blockNumber || 1}
+                    {language === 'id' ? `Blok #${result.record?.blockNumber || 1}` : `Block #${result.record?.blockNumber || 1}`}
                   </p>
                 </div>
               </div>
@@ -323,7 +337,7 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
               <div className="bg-slate-100 p-4 rounded-xl border border-slate-200 space-y-2 text-[11px] font-mono">
                 <p className="text-slate-700 font-semibold flex items-center space-x-1.5">
                   <Cpu className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Bukti Kriptografis Smart Contract:</span>
+                  <span>{language === 'id' ? 'Bukti Kriptografis Smart Contract:' : 'Smart Contract Cryptographic Proof:'}</span>
                 </p>
                 <div className="space-y-1 text-slate-600">
                   <p className="break-all">
@@ -350,13 +364,13 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
                 </div>
                 <div className="space-y-1 flex-1">
                   <div className="inline-block px-3 py-1 rounded-full bg-rose-600 text-white font-extrabold text-xs tracking-wider uppercase shadow-xs">
-                    INVALID / FALSIFIED DOCUMENT
+                    {t.verify.invalidBadge}
                   </div>
                   <h2 className="text-lg font-bold text-rose-950">
-                    Peringatan: Dokumen Tidak Terdaftar atau Terindikasi Manipulasi!
+                    {t.verify.invalidTitle}
                   </h2>
                   <p className="text-xs text-rose-700 leading-relaxed">
-                    Hash kriptografis SHA-256 yang diperiksa tidak ditemukan pada buku besar konsorsium blockchain resmi SMK Negeri 1 Educhain Teknologi.
+                    {t.verify.invalidDesc}
                   </p>
                 </div>
               </div>
@@ -364,15 +378,15 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
               <div className="bg-white p-4 rounded-xl border border-rose-200 space-y-2 text-xs">
                 <div className="flex items-center space-x-2 text-rose-700 font-semibold">
                   <AlertTriangle className="w-4 h-4 shrink-0" />
-                  <span>Penyebab Kemungkinan:</span>
+                  <span>{language === 'id' ? 'Penyebab Kemungkinan:' : 'Possible Causes:'}</span>
                 </div>
                 <ul className="list-disc list-inside text-slate-600 text-xs space-y-1 pl-2">
-                  <li>Dokumen telah diubah atau dimanipulasi (perubahan 1 karakter/titik/nilai mengubah 100% hash SHA-256).</li>
-                  <li>Dokumen belum resmi diterbitkan atau belum ditandatangani oleh Kepala Sekolah / Mitra DUDI.</li>
-                  <li>File PDF bukan merupakan terbitan resmi dari Sistem Informasi Administrasi SMK.</li>
+                  <li>{language === 'id' ? 'Dokumen telah diubah atau dimanipulasi (perubahan 1 karakter/titik/nilai mengubah 100% hash SHA-256).' : 'Document was modified or tampered with (1 modified character alters the SHA-256 completely).'}</li>
+                  <li>{language === 'id' ? 'Dokumen belum resmi diterbitkan atau belum ditandatangani oleh Kepala Sekolah / Mitra DUDI.' : 'Document has not yet been officially issued or signed by Principal / DUDI Partner.'}</li>
+                  <li>{language === 'id' ? 'File PDF bukan merupakan terbitan resmi dari Sistem Informasi Administrasi SMK.' : 'The PDF file was not officially generated by the School SIS.'}</li>
                 </ul>
                 <div className="pt-2 text-[11px] font-mono text-slate-500 break-all">
-                  Hash yang diperiksa: <span className="text-rose-600 font-semibold">{result.queriedHash || hashInput}</span>
+                  {language === 'id' ? 'Hash yang diperiksa:' : 'Queried Hash:'} <span className="text-rose-600 font-semibold">{result.queriedHash || hashInput}</span>
                 </div>
               </div>
             </div>
@@ -382,3 +396,4 @@ export const PublicVerify: React.FC<PublicVerifyProps> = ({
     </div>
   );
 };
+

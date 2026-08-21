@@ -12,12 +12,14 @@ import {
 } from 'lucide-react';
 import { api } from '../api';
 import { Student } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface StudentManagementProps {
   onOpenDocumentPreview?: (doc: any) => void;
 }
 
 export const StudentManagement: React.FC<StudentManagementProps> = ({ onOpenDocumentPreview }) => {
+  const { t, language } = useLanguage();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -73,21 +75,21 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ onOpenDocu
         return (
           <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">
             <CheckCircle2 className="w-3 h-3" />
-            <span>LULUS</span>
+            <span>{t.students.statusGraduated}</span>
           </span>
         );
       case 'PENDING_APPROVAL':
         return (
           <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-xs font-semibold">
             <Clock className="w-3 h-3" />
-            <span>Pending Otorisasi</span>
+            <span>{t.students.statusPending}</span>
           </span>
         );
       default:
         return (
           <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold">
             <BookOpen className="w-3 h-3" />
-            <span>AKTIF</span>
+            <span>{t.students.statusActive}</span>
           </span>
         );
     }
@@ -100,10 +102,12 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ onOpenDocu
         <div>
           <h2 className="text-xl font-bold text-slate-800 flex items-center space-x-2">
             <Users className="w-5 h-5 text-blue-600" />
-            <span>Data Induk Siswa & Kelulusan</span>
+            <span>{t.students.title}</span>
           </h2>
           <p className="text-xs text-slate-500">
-            Daftar siswa SMK Negeri 1 Educhain Teknologi terintegrasi basis data relasional dan blockchain
+            {language === 'id'
+              ? 'Daftar siswa SMK Negeri 1 Educhain Teknologi terintegrasi basis data relasional dan blockchain'
+              : 'SMK Negeri 1 Educhain Teknologi master student registry with relational DB and blockchain sync'}
           </p>
         </div>
 
@@ -113,7 +117,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ onOpenDocu
             <input
               id="student-search-input"
               type="text"
-              placeholder="Cari nama / NISN..."
+              placeholder={t.students.searchPlaceholder}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="bg-white border border-slate-300 rounded-xl px-3.5 py-2 pl-9 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 w-48 sm:w-60 font-medium"
@@ -127,7 +131,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ onOpenDocu
             onChange={(e) => setSelectedClass(e.target.value)}
             className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-blue-600 font-medium"
           >
-            <option value="ALL">Semua Kelas</option>
+            <option value="ALL">{t.students.allClasses}</option>
             <option value="XII TKJ 1">XII TKJ 1</option>
             <option value="XII RPL 2">XII RPL 2</option>
             <option value="XII RPL 1">XII RPL 1</option>
@@ -142,16 +146,16 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ onOpenDocu
             onChange={(e) => setSelectedStatus(e.target.value)}
             className="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-blue-600 font-medium"
           >
-            <option value="ALL">Semua Status</option>
-            <option value="LULUS">LULUS</option>
-            <option value="PENDING_APPROVAL">Pending Otorisasi</option>
-            <option value="AKTIF">AKTIF</option>
+            <option value="ALL">{t.students.allStatuses}</option>
+            <option value="LULUS">{t.students.statusGraduated}</option>
+            <option value="PENDING_APPROVAL">{t.students.statusPending}</option>
+            <option value="AKTIF">{t.students.statusActive}</option>
           </select>
 
           <button
             type="submit"
             className="p-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-xs"
-            title="Cari"
+            title={t.common.search}
           >
             <Search className="w-4 h-4" />
           </button>
@@ -163,22 +167,22 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ onOpenDocu
         {loading ? (
           <div className="p-12 text-center text-slate-500 flex flex-col items-center space-y-2">
             <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
-            <span className="text-xs">Memuat data siswa...</span>
+            <span className="text-xs">{t.common.loading}...</span>
           </div>
         ) : students.length === 0 ? (
           <div className="p-12 text-center text-slate-500 text-xs">
-            Tidak ada data siswa yang cocok dengan filter pencarian.
+            {t.students.empty}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-700">
               <thead className="bg-slate-50 text-slate-600 uppercase font-semibold border-b border-slate-200 text-[10px] tracking-wider">
                 <tr>
-                  <th className="px-5 py-3.5">NISN / NIS</th>
-                  <th className="px-5 py-3.5">Nama Siswa</th>
-                  <th className="px-5 py-3.5">Kelas & Kompetensi Keahlian</th>
-                  <th className="px-5 py-3.5">Status Kelulusan</th>
-                  <th className="px-5 py-3.5 text-right">Aksi</th>
+                  <th className="px-5 py-3.5">{t.students.tableNisn}</th>
+                  <th className="px-5 py-3.5">{t.students.tableName}</th>
+                  <th className="px-5 py-3.5">{t.students.tableClass}</th>
+                  <th className="px-5 py-3.5">{t.students.tableStatus}</th>
+                  <th className="px-5 py-3.5 text-right">{t.students.tableActions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
@@ -201,7 +205,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ onOpenDocu
                         className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors inline-flex items-center space-x-1.5 shadow-xs"
                       >
                         <Eye className="w-3.5 h-3.5 text-slate-500" />
-                        <span>Rincian</span>
+                        <span>{t.students.viewDetail}</span>
                       </button>
                     </td>
                   </tr>
@@ -234,25 +238,25 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ onOpenDocu
             {/* Profile Grid */}
             <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 p-4 rounded-xl border border-slate-200">
               <div>
-                <span className="text-slate-500">Kelas: </span>
+                <span className="text-slate-500">{language === 'id' ? 'Kelas: ' : 'Class: '}</span>
                 <span className="font-semibold text-slate-800">{activeStudent.className}</span>
               </div>
               <div>
-                <span className="text-slate-500">Jurusan: </span>
+                <span className="text-slate-500">{language === 'id' ? 'Jurusan: ' : 'Major: '}</span>
                 <span className="font-semibold text-slate-800">{activeStudent.major}</span>
               </div>
               <div>
-                <span className="text-slate-500">TTL: </span>
+                <span className="text-slate-500">{language === 'id' ? 'TTL: ' : 'POB / DOB: '}</span>
                 <span className="text-slate-800">
                   {activeStudent.birthPlace}, {activeStudent.birthDate}
                 </span>
               </div>
               <div>
-                <span className="text-slate-500">Status: </span>
+                <span className="text-slate-500">{language === 'id' ? 'Status: ' : 'Status: '}</span>
                 {getStatusBadge(activeStudent.graduationStatus)}
               </div>
               <div className="col-span-2">
-                <span className="text-slate-500">Alamat: </span>
+                <span className="text-slate-500">{language === 'id' ? 'Alamat: ' : 'Address: '}</span>
                 <span className="text-slate-800">{activeStudent.address}</span>
               </div>
             </div>
@@ -260,7 +264,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ onOpenDocu
             {/* Grades Section */}
             <div className="space-y-2">
               <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-                Capaian Nilai Akademik
+                {language === 'id' ? 'Capaian Nilai Akademik' : 'Academic Performance & Grades'}
               </h4>
               {activeStudent.grades && activeStudent.grades.length > 0 ? (
                 <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
@@ -280,14 +284,16 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ onOpenDocu
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-slate-400 italic">Belum ada nilai terdaftar.</p>
+                <p className="text-xs text-slate-400 italic">
+                  {language === 'id' ? 'Belum ada nilai terdaftar.' : 'No registered grades.'}
+                </p>
               )}
             </div>
 
             {/* Documents Section */}
             <div className="space-y-2">
               <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-                Dokumen Kelulusan & Blockchain
+                {language === 'id' ? 'Dokumen Kelulusan & Blockchain' : 'Graduation Documents & Blockchain'}
               </h4>
               {activeStudent.documents && activeStudent.documents.length > 0 ? (
                 <div className="space-y-2">
@@ -315,7 +321,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ onOpenDocu
                             }}
                             className="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-semibold"
                           >
-                            Lihat
+                            {language === 'id' ? 'Lihat' : 'View'}
                           </button>
                         )}
                       </div>
@@ -324,7 +330,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ onOpenDocu
                 </div>
               ) : (
                 <p className="text-xs text-slate-400 italic">
-                  Belum ada dokumen ijazah/transkrip yang diterbitkan.
+                  {language === 'id' ? 'Belum ada dokumen ijazah/transkrip yang diterbitkan.' : 'No diploma/transcript documents issued yet.'}
                 </p>
               )}
             </div>

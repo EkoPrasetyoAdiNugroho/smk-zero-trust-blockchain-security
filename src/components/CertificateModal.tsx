@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Award, CheckCircle2, Shield, Printer, ExternalLink, QrCode } from 'lucide-react';
+import { X, Award, CheckCircle2, Shield, Printer, ExternalLink } from 'lucide-react';
 import QRCode from 'qrcode';
 import { DocumentRecord } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface CertificateModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
   document,
   onVerifyInPortal,
 }) => {
+  const { t, language } = useLanguage();
   const [qrUrl, setQrUrl] = useState<string>('');
 
   // Extract normalized fields safely supporting both DocumentRecord & BlockchainRecord
@@ -24,12 +26,12 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
     document?.title ||
     document?.metadata?.title ||
     (document?.documentType === 'SERTIFIKAT_PKL'
-      ? 'Sertifikat Praktik Kerja Lapangan'
-      : 'Ijazah Kelulusan SMK');
+      ? (language === 'id' ? 'Sertifikat Praktik Kerja Lapangan' : 'Industrial Internship Certificate')
+      : (language === 'id' ? 'Ijazah Kelulusan SMK' : 'SMK Graduation Diploma'));
   const docNumber =
     document?.documentNumber || document?.metadata?.documentNumber || 'SMK-TKJ/2026/001-IJZ';
   const studentName =
-    document?.studentName || document?.metadata?.studentName || 'Peserta Didik';
+    document?.studentName || document?.metadata?.studentName || (language === 'id' ? 'Peserta Didik' : 'Student Candidate');
   const studentNisn =
     document?.studentNisn || document?.recipientNisn || document?.metadata?.studentNisn || '0051234567';
   const txHash = document?.transactionHash || '';
@@ -50,18 +52,18 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
 
   if (!isOpen || !document) return null;
 
-  let formattedDate = '29 Juli 2026';
+  let formattedDate = language === 'id' ? '29 Juli 2026' : 'July 29, 2026';
   try {
     const d = new Date(docCreatedAt);
     if (!isNaN(d.getTime())) {
-      formattedDate = d.toLocaleDateString('id-ID', {
+      formattedDate = d.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
       });
     }
   } catch {
-    formattedDate = '29 Juli 2026';
+    formattedDate = language === 'id' ? '29 Juli 2026' : 'July 29, 2026';
   }
 
   return (
@@ -84,10 +86,10 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-slate-900 text-sm truncate max-w-xs sm:max-w-md">
-                Pratinjau Dokumen Resmi: {docTitle}
+                {language === 'id' ? 'Pratinjau Dokumen Resmi: ' : 'Official Document Preview: '}{docTitle}
               </h3>
               <p className="text-[11px] text-slate-500 font-mono">
-                No. Dokumen: {docNumber}
+                {language === 'id' ? 'No. Dokumen: ' : 'Doc No: '}{docNumber}
               </p>
             </div>
           </div>
@@ -116,31 +118,39 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
               {/* School Header */}
               <div className="text-center border-b-2 border-slate-200 pb-3 mb-5 relative z-10">
                 <p className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase font-sans text-slate-500 font-bold">
-                  Kementerian Pendidikan Dasar dan Menengah Republik Indonesia
+                  {language === 'id'
+                    ? 'Kementerian Pendidikan Dasar dan Menengah Republik Indonesia'
+                    : 'Ministry of Primary and Secondary Education of the Republic of Indonesia'}
                 </p>
                 <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-wide mt-1 uppercase font-serif">
                   SMK NEGERI 1 EDUCHAIN TEKNOLOGI
                 </h1>
                 <p className="text-[11px] font-sans text-slate-600 mt-0.5 font-medium">
-                  Kompetensi Keahlian: {document?.metadata?.major || 'Teknik Komputer dan Jaringan'}
+                  {language === 'id' ? 'Kompetensi Keahlian: ' : 'Vocational Major: '}{document?.metadata?.major || 'Teknik Komputer dan Jaringan'}
                 </p>
                 <p className="text-[10px] font-mono text-blue-700 mt-1 font-bold">
-                  NOMOR DOKUMEN: {docNumber}
+                  {language === 'id' ? 'NOMOR DOKUMEN: ' : 'DOCUMENT NUMBER: '}{docNumber}
                 </p>
               </div>
 
               {/* Main Statement */}
               <div className="text-center my-5 relative z-10 space-y-3">
                 <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-widest uppercase underline decoration-slate-300 decoration-1 underline-offset-8">
-                  {isIjazah ? 'I J A Z A H' : isPkl ? 'SERTIFIKAT PRAKTIK KERJA LAPANGAN' : 'TRANSKRIP NILAI'}
+                  {isIjazah ? (language === 'id' ? 'I J A Z A H' : 'D I P L O M A') : isPkl ? (language === 'id' ? 'SERTIFIKAT PRAKTIK KERJA LAPANGAN' : 'INTERNSHIP CERTIFICATE') : (language === 'id' ? 'TRANSKRIP NILAI' : 'ACADEMIC TRANSCRIPT')}
                 </h2>
 
                 <p className="text-xs text-slate-600 italic font-serif max-w-lg mx-auto">
                   {isIjazah
-                    ? 'Menyatakan bahwa peserta didik yang tercantum di bawah ini telah menyelesaikan seluruh program pembelajaran dan dinyatakan:'
+                    ? (language === 'id'
+                        ? 'Menyatakan bahwa peserta didik yang tercantum di bawah ini telah menyelesaikan seluruh program pembelajaran dan dinyatakan:'
+                        : 'Certifies that the student listed below has completed all educational curriculum programs and is declared:')
                     : isPkl
-                    ? 'Menyatakan bahwa peserta didik di bawah ini telah menyelesaikan Praktik Kerja Lapangan dengan hasil memuaskan:'
-                    : 'Daftar capaian nilai akademik peserta didik selama menempuh pendidikan:'}
+                    ? (language === 'id'
+                        ? 'Menyatakan bahwa peserta didik di bawah ini telah menyelesaikan Praktik Kerja Lapangan dengan hasil memuaskan:'
+                        : 'Certifies that the student listed below has successfully completed industrial internship practice with distinction:')
+                    : (language === 'id'
+                        ? 'Daftar capaian nilai akademik peserta didik selama menempuh pendidikan:'
+                        : 'Official academic grade records for the student during their course of study:')}
                 </p>
 
                 {/* Student Identity Box */}
@@ -150,23 +160,23 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   </p>
                   <div className="flex justify-center space-x-6 text-xs text-slate-500 mt-1 font-mono">
                     <span>NISN: <strong className="text-slate-800">{studentNisn}</strong></span>
-                    <span>Tahun Ajaran: <strong className="text-slate-800">2025/2026</strong></span>
+                    <span>{language === 'id' ? 'Tahun Ajaran: ' : 'Academic Year: '}<strong className="text-slate-800">2025/2026</strong></span>
                   </div>
                 </div>
 
                 {isIjazah && (
                   <div className="py-1.5 inline-block px-8 bg-emerald-50 border border-emerald-200 rounded-lg">
                     <span className="text-base sm:text-lg font-bold text-emerald-700 tracking-widest uppercase font-sans">
-                      L U L U S
+                      {language === 'id' ? 'L U L U S' : 'G R A D U A T E D'}
                     </span>
                   </div>
                 )}
 
                 {isPkl && (
                   <div className="text-xs font-sans text-slate-800 space-y-1">
-                    <p>Mitra Industri: <strong>{document?.dudiName || document?.metadata?.pklCompany || 'PT Industri Nusantara Tech'}</strong></p>
-                    <p>Durasi: <strong>{document?.metadata?.pklDuration || '6 Bulan (Juli - Desember 2025)'}</strong></p>
-                    <p>Predikat: <strong className="text-emerald-700">{document?.metadata?.pklScore || 'A (Sangat Memuaskan)'}</strong></p>
+                    <p>{language === 'id' ? 'Mitra Industri: ' : 'Industrial Partner: '}<strong>{document?.dudiName || document?.metadata?.pklCompany || 'PT Industri Nusantara Tech'}</strong></p>
+                    <p>{language === 'id' ? 'Durasi: ' : 'Duration: '}<strong>{document?.metadata?.pklDuration || (language === 'id' ? '6 Bulan (Juli - Desember 2025)' : '6 Months (July - December 2025)')}</strong></p>
+                    <p>{language === 'id' ? 'Predikat: ' : 'Grade: '}<strong className="text-emerald-700">{document?.metadata?.pklScore || (language === 'id' ? 'A (Sangat Memuaskan)' : 'A (Distinction)')}</strong></p>
                   </div>
                 )}
               </div>
@@ -188,7 +198,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                     <p className="truncate text-slate-500" title={fileHash}>
                       Hash: {fileHash ? fileHash.slice(0, 14) + '...' : '-'}
                     </p>
-                    <p className="text-slate-500">Blok #{blockNum}</p>
+                    <p className="text-slate-500">{language === 'id' ? `Blok #${blockNum}` : `Block #${blockNum}`}</p>
                   </div>
                 </div>
 
@@ -196,11 +206,13 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 <div className="text-center">
                   <p className="text-[10px] text-slate-500">Bandung, {formattedDate}</p>
                   <p className="text-[10px] sm:text-[11px] font-bold text-slate-800 mt-0.5">
-                    {isPkl ? 'Pimpinan Mitra Industri DUDI' : 'Kepala Sekolah,'}
+                    {isPkl
+                      ? (language === 'id' ? 'Pimpinan Mitra Industri DUDI' : 'Director of Industrial Partner')
+                      : (language === 'id' ? 'Kepala Sekolah,' : 'School Principal,')}
                   </p>
                   <div className="h-8 flex items-center justify-center my-0.5">
                     <span className="text-[9px] font-mono px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded font-semibold">
-                      [Terkonfirmasi Tanda Tangan Digital]
+                      {language === 'id' ? '[Terkonfirmasi Tanda Tangan Digital]' : '[Digitally Signed & Certified]'}
                     </span>
                   </div>
                   <p className="text-xs font-bold text-slate-900 underline">
@@ -218,7 +230,9 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
           <div className="bg-slate-50 p-4 sm:p-5 border-t border-slate-200 space-y-3">
             <div className="bg-white p-3.5 rounded-xl border border-slate-200 text-xs font-mono space-y-2">
               <div className="flex items-center justify-between text-slate-500">
-                <span className="font-semibold text-slate-800 font-sans">Kredensial Keabsahan Blockchain (EduChain)</span>
+                <span className="font-semibold text-slate-800 font-sans">
+                  {language === 'id' ? 'Kredensial Keabsahan Blockchain (EduChain)' : 'Blockchain Authenticity Credentials (EduChain)'}
+                </span>
                 <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200 font-sans">
                   STATUS: {docStatus}
                 </span>
@@ -230,7 +244,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 </div>
                 <div>
                   <span className="text-slate-500">Transaction Hash: </span>
-                  <span className="text-slate-800 break-all">{txHash || 'Terdaftar pada Block Ledger'}</span>
+                  <span className="text-slate-800 break-all">{txHash || (language === 'id' ? 'Terdaftar pada Block Ledger' : 'Registered on Block Ledger')}</span>
                 </div>
               </div>
             </div>
@@ -242,7 +256,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 className="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors flex items-center space-x-2 border border-slate-200 shadow-xs"
               >
                 <Printer className="w-4 h-4 text-slate-500" />
-                <span>Cetak / Simpan PDF</span>
+                <span>{language === 'id' ? 'Cetak / Simpan PDF' : 'Print / Save as PDF'}</span>
               </button>
 
               {onVerifyInPortal && fileHash && (
@@ -255,7 +269,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors flex items-center space-x-2 shadow-md shadow-blue-600/20"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  <span>Uji Verifikasi di Portal Publik</span>
+                  <span>{language === 'id' ? 'Uji Verifikasi di Portal Publik' : 'Verify in Public Portal'}</span>
                 </button>
               )}
             </div>

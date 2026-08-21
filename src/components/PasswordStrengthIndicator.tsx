@@ -1,28 +1,33 @@
 import React from 'react';
 import { ShieldAlert, ShieldCheck, Shield } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export interface PasswordStrength {
   score: 0 | 1 | 2 | 3;
-  label: 'Lemah' | 'Sedang' | 'Kuat' | '';
+  labelId: string;
+  labelEn: string;
   entropy: number;
   colorClass: string;
   textColorClass: string;
   badgeBgClass: string;
   badgeBorderClass: string;
-  feedback: string;
+  feedbackId: string;
+  feedbackEn: string;
 }
 
 export function calculatePasswordEntropy(password: string): PasswordStrength {
   if (!password) {
     return {
       score: 0,
-      label: '',
+      labelId: '',
+      labelEn: '',
       entropy: 0,
       colorClass: 'bg-[#E5E2D8]',
       textColorClass: 'text-[#717865]',
       badgeBgClass: 'bg-[#F4F1EA]',
       badgeBorderClass: 'border-[#E5E2D8]',
-      feedback: 'Masukkan kata sandi',
+      feedbackId: 'Masukkan kata sandi',
+      feedbackEn: 'Enter a password',
     };
   }
 
@@ -49,35 +54,41 @@ export function calculatePasswordEntropy(password: string): PasswordStrength {
   if (entropy < 36 || password.length < 6) {
     return {
       score: 1,
-      label: 'Lemah',
+      labelId: 'Lemah',
+      labelEn: 'Weak',
       entropy: roundedEntropy,
       colorClass: 'bg-red-500',
       textColorClass: 'text-red-600',
       badgeBgClass: 'bg-red-50',
       badgeBorderClass: 'border-red-200',
-      feedback: 'Entropi rendah (<36 bit). Gunakan campuran huruf besar, angka, & simbol.',
+      feedbackId: 'Entropi rendah (<36 bit). Gunakan campuran huruf besar, angka, & simbol.',
+      feedbackEn: 'Low entropy (<36 bits). Use a mix of uppercase, numbers, & symbols.',
     };
   } else if (entropy < 60 || password.length < 10) {
     return {
       score: 2,
-      label: 'Sedang',
+      labelId: 'Sedang',
+      labelEn: 'Moderate',
       entropy: roundedEntropy,
       colorClass: 'bg-amber-500',
       textColorClass: 'text-amber-700',
       badgeBgClass: 'bg-amber-50',
       badgeBorderClass: 'border-amber-200',
-      feedback: 'Entropi cukup (' + roundedEntropy + ' bit). Tingkatkan panjang untuk ketahanan maksimal.',
+      feedbackId: 'Entropi cukup (' + roundedEntropy + ' bit). Tingkatkan panjang untuk ketahanan maksimal.',
+      feedbackEn: 'Moderate entropy (' + roundedEntropy + ' bits). Increase length for higher resilience.',
     };
   } else {
     return {
       score: 3,
-      label: 'Kuat',
+      labelId: 'Kuat',
+      labelEn: 'Strong',
       entropy: roundedEntropy,
       colorClass: 'bg-emerald-600',
       textColorClass: 'text-emerald-700',
       badgeBgClass: 'bg-emerald-50',
       badgeBorderClass: 'border-emerald-200',
-      feedback: 'Entropi tinggi (≥60 bit: ' + roundedEntropy + ' bit). Sangat aman dari brute-force.',
+      feedbackId: 'Entropi tinggi (≥60 bit: ' + roundedEntropy + ' bit). Sangat aman dari brute-force.',
+      feedbackEn: 'High entropy (≥60 bits: ' + roundedEntropy + ' bits). Highly resilient against brute-force.',
     };
   }
 }
@@ -87,6 +98,7 @@ interface PasswordStrengthIndicatorProps {
 }
 
 export const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps> = ({ password }) => {
+  const { language } = useLanguage();
   if (!password) return null;
 
   const strength = calculatePasswordEntropy(password);
@@ -119,27 +131,27 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps>
           {strength.score === 2 && <Shield className="w-3 h-3 text-amber-500 shrink-0" />}
           {strength.score === 3 && <ShieldCheck className="w-3 h-3 text-emerald-600 shrink-0" />}
           
-          <span className="text-[#717865]">Kekuatan:</span>
+          <span className="text-[#717865]">{language === 'id' ? 'Kekuatan:' : 'Strength:'}</span>
           <span
             id="password-strength-label"
             className={`font-bold px-1.5 py-0.2 rounded border ${strength.textColorClass} ${strength.badgeBgClass} ${strength.badgeBorderClass}`}
           >
-            {strength.label}
+            {language === 'id' ? strength.labelId : strength.labelEn}
           </span>
         </div>
 
         <span
           id="password-entropy-bits"
           className="text-[#8D6219] font-medium tracking-tight bg-[#FAF9F5] border border-[#E5E2D8] px-1.5 py-0.5 rounded"
-          title={`Kalkulasi Entropi: E = L × log2(R) = ~${strength.entropy} bit`}
+          title={`Shannon Entropy: E = L × log2(R) = ~${strength.entropy} bits`}
         >
-          Entropi: <strong>{strength.entropy} bit</strong>
+          {language === 'id' ? 'Entropi:' : 'Entropy:'} <strong>{strength.entropy} bit{language === 'en' ? 's' : ''}</strong>
         </span>
       </div>
 
       {/* Dynamic Security Tip */}
       <p className="text-[10px] text-[#717865] leading-tight italic">
-        {strength.feedback}
+        {language === 'id' ? strength.feedbackId : strength.feedbackEn}
       </p>
     </div>
   );

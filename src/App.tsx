@@ -23,6 +23,8 @@ import { AuditLogViewer } from './components/AuditLogViewer';
 import { SecurityTestCenter } from './components/SecurityTestCenter';
 import { CertificateModal } from './components/CertificateModal';
 import { MfaModal } from './components/MfaModal';
+import { LanguageToggle } from './components/LanguageToggle';
+import { useLanguage } from './i18n/LanguageContext';
 import {
   api,
   getStoredUser,
@@ -39,6 +41,7 @@ import {
 import { User, UserRole, DocumentRecord } from './types';
 
 export default function App() {
+  const { t } = useLanguage();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [viewMode, setViewMode] = useState<'landing' | 'app'>('landing');
   const [activeTab, setActiveTab] = useState<string>('verify');
@@ -280,24 +283,26 @@ export default function App() {
         {/* Top Breadcrumb & Quick Status Header on Desktop */}
         <header className="hidden lg:flex items-center justify-between px-8 py-4 bg-white/85 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30">
           <div className="flex items-center space-x-2 text-xs text-slate-500">
-            <span className="font-semibold text-slate-800">SIA SMK EduChain</span>
+            <span className="font-semibold text-slate-800">{t.common.appName}</span>
             <ChevronRight className="w-3.5 h-3.5 opacity-40" />
             <span className="capitalize font-semibold text-blue-600">
-              {activeTab === 'verify' && 'Portal Verifikasi Ijazah Publik'}
-              {activeTab === 'students' && 'Data Induk Siswa & Kelulusan'}
-              {activeTab === 'grades' && 'Manajemen & Transkrip Nilai'}
-              {activeTab === 'documents' && 'Manajemen Ijazah & Transkrip'}
-              {activeTab === 'dudi' && 'Portal Penilaian & Sertifikasi DUDI'}
-              {activeTab === 'blockchain' && 'EduChain Consortium Explorer'}
-              {activeTab === 'audit' && 'Security SIEM & Audit Trail'}
-              {activeTab === 'security_tests' && 'Live Security Penetration Testing'}
+              {activeTab === 'verify' && t.nav.publicVerify}
+              {activeTab === 'students' && t.nav.students}
+              {activeTab === 'grades' && t.nav.grades}
+              {activeTab === 'documents' && t.nav.documents}
+              {activeTab === 'dudi' && t.nav.dudi}
+              {activeTab === 'blockchain' && t.nav.blockchain}
+              {activeTab === 'audit' && t.nav.auditLogs}
+              {activeTab === 'security_tests' && t.nav.securityTests}
             </span>
           </div>
 
           <div className="flex items-center space-x-3 text-xs">
+            <LanguageToggle variant="compact" />
+
             <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-medium border border-blue-200">
               <Shield className="w-3.5 h-3.5 text-blue-600" />
-              <span>Zero Trust & RS256 Active</span>
+              <span>{t.common.zeroTrustBadge}</span>
             </div>
 
             {!currentUser && (
@@ -306,7 +311,7 @@ export default function App() {
                 className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all shadow-xs flex items-center space-x-1.5 text-xs shadow-blue-500/20"
               >
                 <LogIn className="w-3.5 h-3.5" />
-                <span>Masuk ke Akun</span>
+                <span>{t.common.loginToAccount}</span>
               </button>
             )}
           </div>

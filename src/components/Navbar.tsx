@@ -15,6 +15,8 @@ import {
   Search,
 } from 'lucide-react';
 import { User, UserRole } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
+import { LanguageToggle } from './LanguageToggle';
 
 interface NavbarProps {
   currentUser: User | null;
@@ -35,6 +37,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onQuickSwitchRole,
   onOpenSecurityTests,
 }) => {
+  const { t, language } = useLanguage();
+
   const getRoleBadgeColor = (role?: UserRole) => {
     switch (role) {
       case 'TU':
@@ -86,7 +90,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Search className="w-3.5 h-3.5" />
-              <span>Verifikasi Publik</span>
+              <span>{t.nav.verify}</span>
             </button>
 
             {currentUser && (
@@ -102,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }`}
                   >
                     <Users className="w-3.5 h-3.5" />
-                    <span>Data Siswa</span>
+                    <span>{t.nav.students}</span>
                   </button>
                 )}
 
@@ -117,7 +121,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }`}
                   >
                     <GraduationCap className="w-3.5 h-3.5" />
-                    <span>{currentUser.role === 'SISWA' ? 'Rapor Nilai' : 'Manajemen Nilai'}</span>
+                    <span>{currentUser.role === 'SISWA' ? (language === 'id' ? 'Rapor Nilai' : 'Report Card') : t.nav.grades}</span>
                   </button>
                 )}
 
@@ -132,7 +136,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }`}
                   >
                     <FileCheck className="w-3.5 h-3.5" />
-                    <span>Dokumen & Ijazah</span>
+                    <span>{t.nav.documents}</span>
                   </button>
                 )}
 
@@ -147,7 +151,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }`}
                   >
                     <Briefcase className="w-3.5 h-3.5" />
-                    <span>Penerbitan Sertifikat PKL</span>
+                    <span>{t.nav.dudi}</span>
                   </button>
                 )}
 
@@ -162,7 +166,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }`}
                   >
                     <Layers className="w-3.5 h-3.5" />
-                    <span>Audit Logs</span>
+                    <span>{t.nav.audit}</span>
                   </button>
                 )}
               </>
@@ -178,7 +182,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <Cpu className="w-3.5 h-3.5" />
-              <span>Blockchain Explorer</span>
+              <span>{t.nav.blockchain}</span>
             </button>
 
             <button
@@ -191,12 +195,14 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Live Security Tests</span>
+              <span>{t.nav.securityTests}</span>
             </button>
           </nav>
 
-          {/* User Status / Quick Switcher */}
+          {/* User Status / Language Toggle / Quick Switcher */}
           <div className="flex items-center space-x-3">
+            <LanguageToggle className="hidden sm:flex" />
+
             {currentUser ? (
               <div className="flex items-center space-x-3">
                 <div className="hidden sm:flex flex-col items-end">
@@ -218,7 +224,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   id="navbar-logout-btn"
                   onClick={onLogout}
                   className="p-2 rounded-xl bg-white border border-[#E5E2D8] text-[#717865] hover:text-[#9C382A] hover:bg-[#FDF1F0] transition-colors"
-                  title="Logout"
+                  title={t.nav.logout}
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -230,7 +236,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="px-4 py-2 rounded-xl bg-[#5A634D] hover:bg-[#4A533E] text-white text-xs font-bold transition-all shadow-md shadow-[#5A634D]/20 flex items-center space-x-2"
               >
                 <LogIn className="w-4 h-4" />
-                <span>Login Akun</span>
+                <span>{t.nav.login}</span>
               </button>
             )}
           </div>
@@ -240,7 +246,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="py-2 border-t border-[#E5E2D8] flex items-center justify-between text-xs overflow-x-auto gap-2">
           <div className="flex items-center space-x-1.5 shrink-0 text-[#717865] text-[11px]">
             <UserCheck className="w-3.5 h-3.5 text-[#8D6219] shrink-0" />
-            <span className="font-semibold text-[#3C4133]">Demo Role Switch:</span>
+            <span className="font-semibold text-[#3C4133]">{language === 'id' ? 'Ganti Peran Demo:' : 'Demo Role Switch:'}</span>
           </div>
 
           <div className="flex items-center space-x-1.5 shrink-0">
@@ -257,7 +263,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       : 'bg-white text-[#555C48] hover:text-[#3C4133] border-[#E5E2D8] hover:bg-[#F4F1EA]'
                   }`}
                 >
-                  {r === 'KEPALA_SEKOLAH' ? 'Kepsek' : r}
+                  {r === 'KEPALA_SEKOLAH' ? (language === 'id' ? 'Kepsek' : 'Principal') : r}
                 </button>
               );
             })}

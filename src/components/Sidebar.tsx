@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import { User, UserRole } from '../types';
 import { AppLogo } from './AppLogo';
+import { LanguageToggle } from './LanguageToggle';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface SidebarProps {
   currentUser: User | null;
@@ -44,6 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenSecurityTests,
   onBackToLanding,
 }) => {
+  const { t, language } = useLanguage();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [roleSwitcherOpen, setRoleSwitcherOpen] = useState(false);
 
@@ -67,22 +70,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const getRoleLabel = (role?: UserRole) => {
-    switch (role) {
-      case 'KEPALA_SEKOLAH':
-        return 'Kepala Sekolah';
-      case 'TU':
-        return 'Tata Usaha';
-      case 'GURU':
-        return 'Guru Pengampu';
-      case 'SISWA':
-        return 'Siswa';
-      case 'DUDI':
-        return 'Mitra Industri DUDI';
-      case 'AUDITOR':
-        return 'Auditor Pengawas';
-      default:
-        return 'Tamu / Verifikator';
-    }
+    if (!role) return t.roles.GUEST;
+    return t.roles[role] || role;
   };
 
   const navItemClass = (isActive: boolean, activeColorClass: string = 'bg-blue-600 text-white shadow-md shadow-blue-600/25') =>
@@ -106,6 +95,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         <div className="flex items-center space-x-2">
+          <LanguageToggle variant="compact" />
+
           {currentUser ? (
             <div className="flex items-center space-x-2">
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getRoleBadgeColor(currentUser.role)}`}>
@@ -114,7 +105,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={onLogout}
                 className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50"
-                title="Logout"
+                title={t.common.logout}
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -124,7 +115,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={onBackToLanding || onOpenLogin}
               className="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold shadow-sm"
             >
-              Login
+              {t.common.login}
             </button>
           )}
 
@@ -153,9 +144,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         }`}
       >
         {/* TOP & MIDDLE: Logo + Navigation Groups + Role Simulator */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-5">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Logo Header */}
-          <div className="pt-2 pb-4 border-b border-slate-100 flex items-center justify-between">
+          <div className="pt-2 pb-3 border-b border-slate-100 flex items-center justify-between">
             <AppLogo size="md" />
             <button
               onClick={() => setMobileOpen(false)}
@@ -165,12 +156,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
           </div>
 
+          {/* Language Selector in Sidebar */}
+          <LanguageToggle variant="sidebar" />
+
           {/* Navigation Items */}
           <nav className="space-y-4 text-xs">
             {/* Group 1: Portal Publik */}
             <div className="space-y-1">
               <span className="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Portal & Konsorsium
+                {t.nav.consortiumSecurity}
               </span>
 
               <button
@@ -180,7 +174,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 <div className="flex items-center space-x-2.5">
                   <Search className="w-4 h-4 shrink-0" />
-                  <span>Verifikasi Ijazah Publik</span>
+                  <span>{t.nav.publicVerify}</span>
                 </div>
                 <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono ${activeTab === 'verify' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'}`}>SHA-256</span>
               </button>
@@ -192,7 +186,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 <div className="flex items-center space-x-2.5">
                   <Cpu className="w-4 h-4 shrink-0" />
-                  <span>Blockchain Explorer</span>
+                  <span>{t.nav.blockchain}</span>
                 </div>
                 <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono ${activeTab === 'blockchain' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'}`}>PoA</span>
               </button>
@@ -201,7 +195,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Group 2: Akademik & Administrasi */}
             <div className="space-y-1">
               <span className="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Akademik & Dokumen
+                {t.nav.academicPortal}
               </span>
 
               {/* Data Siswa */}
@@ -213,7 +207,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                   <div className="flex items-center space-x-2.5">
                     <Users className="w-4 h-4 shrink-0" />
-                    <span>Data Induk Siswa</span>
+                    <span>{t.nav.students}</span>
                   </div>
                   <ChevronRight className="w-3.5 h-3.5 opacity-50" />
                 </button>
@@ -228,7 +222,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                   <div className="flex items-center space-x-2.5">
                     <GraduationCap className="w-4 h-4 shrink-0" />
-                    <span>{currentUser?.role === 'SISWA' ? 'Rapor & Nilai Saya' : 'Manajemen Nilai'}</span>
+                    <span>{currentUser?.role === 'SISWA' ? (language === 'id' ? 'Rapor & Nilai Saya' : 'My Grades & Report') : t.nav.grades}</span>
                   </div>
                   <ChevronRight className="w-3.5 h-3.5 opacity-50" />
                 </button>
@@ -243,7 +237,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                   <div className="flex items-center space-x-2.5">
                     <FileCheck className="w-4 h-4 shrink-0" />
-                    <span>Ijazah & Transkrip</span>
+                    <span>{t.nav.documents}</span>
                   </div>
                   <ChevronRight className="w-3.5 h-3.5 opacity-50" />
                 </button>
@@ -258,7 +252,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                   <div className="flex items-center space-x-2.5">
                     <Briefcase className="w-4 h-4 shrink-0" />
-                    <span>Sertifikat PKL DUDI</span>
+                    <span>{t.nav.dudi}</span>
                   </div>
                   <ChevronRight className="w-3.5 h-3.5 opacity-50" />
                 </button>
@@ -268,7 +262,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Group 3: Keamanan, Audit & Pengujian */}
             <div className="space-y-1">
               <span className="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Keamanan & Forensik
+                {language === 'id' ? 'Keamanan & Forensik' : 'Security & Forensics'}
               </span>
 
               {(!currentUser || ['KEPALA_SEKOLAH', 'AUDITOR', 'TU'].includes(currentUser.role)) && (
@@ -279,7 +273,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                   <div className="flex items-center space-x-2.5">
                     <Layers className="w-4 h-4 shrink-0" />
-                    <span>Audit SIEM Logs</span>
+                    <span>{t.nav.auditLogs}</span>
                   </div>
                   <ChevronRight className="w-3.5 h-3.5 opacity-50" />
                 </button>
@@ -298,7 +292,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 <div className="flex items-center space-x-2.5">
                   <ShieldCheck className="w-4 h-4 shrink-0 text-blue-400" />
-                  <span>Security Test Center</span>
+                  <span>{t.nav.securityTests}</span>
                 </div>
                 <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-600/30 text-blue-200 font-bold">20/20</span>
               </button>
@@ -314,7 +308,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
               <div className="flex items-center space-x-1.5 text-blue-600">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Simulasi Ganti Role</span>
+                <span>{t.common.switchRole}</span>
               </div>
               <ChevronDown
                 className={`w-3.5 h-3.5 text-slate-400 transform transition-transform ${
@@ -341,7 +335,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
                       }`}
                     >
-                      {r === 'KEPALA_SEKOLAH' ? 'Kepsek' : r}
+                      {r === 'KEPALA_SEKOLAH' ? (language === 'id' ? 'Kepsek' : 'Principal') : r}
                     </button>
                   );
                 })}
@@ -373,7 +367,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   id="sidebar-logout-btn"
                   onClick={onLogout}
                   className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                  title="Keluar dari Akun"
+                  title={t.common.logout}
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -404,7 +398,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="bg-white rounded-2xl p-3 border border-slate-200 space-y-2 text-center">
               <div className="flex items-center justify-center space-x-1.5 text-xs text-slate-600">
                 <Shield className="w-3.5 h-3.5 text-blue-600" />
-                <span className="font-semibold text-xs">Mode Tamu / Publik</span>
+                <span className="font-semibold text-xs">{language === 'id' ? 'Mode Tamu / Publik' : 'Guest / Public Mode'}</span>
               </div>
               <button
                 id="sidebar-login-action-btn"
@@ -412,7 +406,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className="w-full py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs shadow-blue-500/20 flex items-center justify-center space-x-2"
               >
                 <LogIn className="w-3.5 h-3.5" />
-                <span>Masuk ke Akun</span>
+                <span>{t.common.loginToAccount}</span>
               </button>
             </div>
           )}
@@ -433,3 +427,4 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </>
   );
 };
+

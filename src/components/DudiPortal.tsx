@@ -13,6 +13,7 @@ import {
 import { api } from '../api';
 import { DocumentRecord, Student, User } from '../types';
 import { AnimatedCheckmark } from './AnimatedCheckmark';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface DudiPortalProps {
   currentUser: User | null;
@@ -25,13 +26,14 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
   onOpenPreview,
   onVerifyInPortal,
 }) => {
+  const { t, language } = useLanguage();
   const [documents, setDocuments] = useState<DocumentRecord[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [showIssueModal, setShowIssueModal] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState('');
-  const [pklDuration, setPklDuration] = useState('6 Bulan (Juli - Desember 2025)');
-  const [pklScore, setPklScore] = useState('A (Sangat Memuaskan - 95.0)');
+  const [pklDuration, setPklDuration] = useState(language === 'id' ? '6 Bulan (Juli - Desember 2025)' : '6 Months (July - December 2025)');
+  const [pklScore, setPklScore] = useState(language === 'id' ? 'A (Sangat Memuaskan - 95.0)' : 'A (Distinction - 95.0)');
   const [pklRole, setPklRole] = useState('Cloud Security Engineer Intern');
   const [issuing, setIssuing] = useState(false);
   const [issueVerified, setIssueVerified] = useState(false);
@@ -64,7 +66,7 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
   const handleIssuePklCert = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStudentId) {
-      setError('Pilih siswa peserta magang PKL.');
+      setError(language === 'id' ? 'Pilih siswa peserta magang PKL.' : 'Please select an intern student.');
       return;
     }
 
@@ -76,7 +78,7 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
 
     try {
       const docNumber = `PKL/NUSTECH/2026/${Math.floor(100 + Math.random() * 900)}`;
-      const title = `Sertifikat PKL — ${student.fullName} (${pklRole})`;
+      const title = language === 'id' ? `Sertifikat PKL — ${student.fullName} (${pklRole})` : `Internship Certificate — ${student.fullName} (${pklRole})`;
 
       // 1. Upload DUDI document draft
       const uploadRes = await api.uploadDocument({
@@ -92,13 +94,13 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
       });
 
       if (!uploadRes.ok || !uploadRes.data?.data?.id) {
-        throw new Error(uploadRes.message || 'Gagal membuat draf sertifikat PKL');
+        throw new Error(uploadRes.message || (language === 'id' ? 'Gagal membuat draf sertifikat PKL' : 'Failed to create internship certificate draft'));
       }
 
       // 2. Issue and digitally sign on blockchain with DUDI authority
       const issueRes = await api.issueDocumentOnChain(uploadRes.data.data.id);
       if (!issueRes.ok) {
-        throw new Error(issueRes.message || 'Gagal menandatangani sertifikat di blockchain');
+        throw new Error(issueRes.message || (language === 'id' ? 'Gagal menandatangani sertifikat di blockchain' : 'Failed to sign certificate on blockchain'));
       }
 
       setIssueVerified(true);
@@ -108,7 +110,7 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
         fetchDudiData();
       }, 950);
     } catch (err: any) {
-      setError(err.message || 'Terjadi kesalahan sistem.');
+      setError(err.message || (language === 'id' ? 'Terjadi kesalahan sistem.' : 'A system error occurred.'));
     } finally {
       setIssuing(false);
     }
@@ -125,14 +127,14 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
           <div>
             <div className="flex items-center space-x-2">
               <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-200 uppercase">
-                Mitra Industri Terverifikasi
+                {language === 'id' ? 'Mitra Industri Terverifikasi' : 'Verified Industry Partner'}
               </span>
             </div>
             <h2 className="text-xl font-bold text-slate-800 mt-0.5">
-              Portal Industri DUDI — {currentUser?.organization || 'PT Industri Nusantara Tech'}
+              {t.dudi.title} — {currentUser?.organization || 'PT Industri Nusantara Tech'}
             </h2>
             <p className="text-xs text-slate-500">
-              Penerbitan & Penandatanganan Digital Sertifikat Praktik Kerja Lapangan Siswa SMK
+              {t.dudi.subtitle}
             </p>
           </div>
         </div>
@@ -146,7 +148,7 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
           className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all flex items-center space-x-2 shrink-0"
         >
           <Plus className="w-4 h-4" />
-          <span>Terbitkan Sertifikat PKL Baru</span>
+          <span>{t.dudi.issueNew}</span>
         </button>
       </div>
 
@@ -155,30 +157,30 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
         <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
           <h3 className="font-bold text-slate-800 text-sm flex items-center space-x-2">
             <Award className="w-4 h-4 text-blue-600" />
-            <span>Daftar Sertifikat PKL yang Telah Diterbitkan & Terdaftar di Blockchain</span>
+            <span>{language === 'id' ? 'Daftar Sertifikat PKL yang Telah Diterbitkan & Terdaftar di Blockchain' : 'List of Issued Internship Certificates Registered on Blockchain'}</span>
           </h3>
-          <span className="text-xs text-slate-500 font-semibold">{documents.length} Sertifikat</span>
+          <span className="text-xs text-slate-500 font-semibold">{documents.length} {language === 'id' ? 'Sertifikat' : 'Certificates'}</span>
         </div>
 
         {loading ? (
           <div className="p-12 text-center text-slate-500 flex flex-col items-center space-y-2">
             <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
-            <span className="text-xs">Memuat data sertifikat...</span>
+            <span className="text-xs">{t.common.loading}...</span>
           </div>
         ) : documents.length === 0 ? (
           <div className="p-12 text-center text-slate-500 text-xs">
-            Belum ada sertifikat PKL yang diterbitkan oleh mitra industri ini.
+            {t.dudi.empty}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-700">
               <thead className="bg-slate-50 text-slate-600 uppercase font-semibold border-b border-slate-200 text-[10px] tracking-wider">
                 <tr>
-                  <th className="px-5 py-3.5">Nomor & Judul Sertifikat</th>
-                  <th className="px-5 py-3.5">Nama Siswa / NISN</th>
-                  <th className="px-5 py-3.5">Nilai / Predikat</th>
-                  <th className="px-5 py-3.5">Status Blockchain</th>
-                  <th className="px-5 py-3.5 text-right">Aksi</th>
+                  <th className="px-5 py-3.5">{t.dudi.tableTitle}</th>
+                  <th className="px-5 py-3.5">{t.dudi.tableStudent}</th>
+                  <th className="px-5 py-3.5">{t.dudi.tableScore}</th>
+                  <th className="px-5 py-3.5">{t.dudi.tableStatus}</th>
+                  <th className="px-5 py-3.5 text-right">{t.dudi.tableActions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
@@ -194,13 +196,13 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
                     </td>
                     <td className="px-5 py-3.5 text-slate-800">
                       <span className="font-semibold text-emerald-700">
-                        {doc.metadata?.pklScore || 'A (Sangat Memuaskan)'}
+                        {doc.metadata?.pklScore || (language === 'id' ? 'A (Sangat Memuaskan)' : 'A (Distinction)')}
                       </span>
                     </td>
                     <td className="px-5 py-3.5">
                       <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold">
                         <CheckCircle2 className="w-3 h-3" />
-                        <span>Blok #{doc.blockNumber || 1} (On-Chain)</span>
+                        <span>{language === 'id' ? `Blok #${doc.blockNumber || 1} (On-Chain)` : `Block #${doc.blockNumber || 1} (On-Chain)`}</span>
                       </span>
                     </td>
                     <td className="px-5 py-3.5 text-right space-x-2">
@@ -209,14 +211,14 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
                         className="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors inline-flex items-center space-x-1 border border-slate-200 shadow-xs"
                       >
                         <Eye className="w-3.5 h-3.5 text-slate-500" />
-                        <span>Pratinjau</span>
+                        <span>{t.documents.preview}</span>
                       </button>
                       <button
                         onClick={() => onVerifyInPortal(doc.fileHash)}
                         className="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition-colors inline-flex items-center space-x-1"
                       >
                         <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                        <span>Uji Keabsahan</span>
+                        <span>{language === 'id' ? 'Uji Keabsahan' : 'Verify'}</span>
                       </button>
                     </td>
                   </tr>
@@ -236,7 +238,9 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
                 <Briefcase className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-900">Penerbitan Sertifikat PKL Industri</h3>
+                <h3 className="text-base font-bold text-slate-900">
+                  {language === 'id' ? 'Penerbitan Sertifikat PKL Industri' : 'Industrial Internship Certificate Issuance'}
+                </h3>
                 <p className="text-[11px] text-blue-600 font-semibold">Digital Signing via Smart Contract</p>
               </div>
             </div>
@@ -250,14 +254,16 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
 
             <form onSubmit={handleIssuePklCert} className="space-y-4 text-xs">
               <div>
-                <label className="font-bold text-slate-700 mb-1 block">Pilih Siswa Peserta PKL</label>
+                <label className="font-bold text-slate-700 mb-1 block">
+                  {language === 'id' ? 'Pilih Siswa Peserta PKL' : 'Select Intern Student'}
+                </label>
                 <select
                   value={selectedStudentId}
                   onChange={(e) => setSelectedStudentId(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-800 focus:outline-none focus:border-blue-600 font-medium"
                   required
                 >
-                  <option value="">-- Pilih Siswa --</option>
+                  <option value="">-- {language === 'id' ? 'Pilih Siswa' : 'Select Student'} --</option>
                   {students.map((st) => (
                     <option key={st.id} value={st.id}>
                       {st.fullName} (NISN: {st.nisn}) — {st.className}
@@ -267,7 +273,9 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 mb-1 block">Posisi / Kompetensi Magang</label>
+                <label className="font-bold text-slate-700 mb-1 block">
+                  {language === 'id' ? 'Posisi / Kompetensi Magang' : 'Internship Position / Role'}
+                </label>
                 <input
                   type="text"
                   value={pklRole}
@@ -279,7 +287,9 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-slate-700 mb-1 block">Durasi PKL</label>
+                  <label className="font-bold text-slate-700 mb-1 block">
+                    {language === 'id' ? 'Durasi PKL' : 'Internship Duration'}
+                  </label>
                   <input
                     type="text"
                     value={pklDuration}
@@ -290,7 +300,9 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 mb-1 block">Nilai Capaian / Predikat</label>
+                  <label className="font-bold text-slate-700 mb-1 block">
+                    {language === 'id' ? 'Nilai Capaian / Predikat' : 'Grade / Performance Predicate'}
+                  </label>
                   <input
                     type="text"
                     value={pklScore}
@@ -302,7 +314,9 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
               </div>
 
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-[11px] text-slate-500">
-                Sertifikat ini akan ditandatangani menggunakan kunci kriptografis institusi industri Anda dan dicatat permanen pada blockchain EduChain.
+                {language === 'id'
+                  ? 'Sertifikat ini akan ditandatangani menggunakan kunci kriptografis institusi industri Anda dan dicatat permanen pada blockchain EduChain.'
+                  : 'This certificate will be cryptographically signed using your industrial partner key and permanently recorded on EduChain.'}
               </div>
 
               <div className="flex space-x-2 pt-2">
@@ -312,7 +326,7 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
                   disabled={issueVerified}
                   className="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold disabled:opacity-40 transition-colors"
                 >
-                  Batal
+                  {t.common.cancel}
                 </button>
                 <button
                   id="confirm-dudi-issue-btn"
@@ -327,17 +341,19 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
                   {issueVerified ? (
                     <>
                       <AnimatedCheckmark size={18} strokeColor="#FFFFFF" className="w-4 h-4" />
-                      <span className="font-semibold tracking-wide">Kredensial & TTD Terverifikasi!</span>
+                      <span className="font-semibold tracking-wide">
+                        {language === 'id' ? 'Kredensial & TTD Terverifikasi!' : 'Credentials & Signature Verified!'}
+                      </span>
                     </>
                   ) : issuing ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Menerbitkan on-chain...</span>
+                      <span>{language === 'id' ? 'Menerbitkan on-chain...' : 'Issuing on-chain...'}</span>
                     </>
                   ) : (
                     <>
                       <Cpu className="w-4 h-4" />
-                      <span>Tandatangani & Terbitkan</span>
+                      <span>{language === 'id' ? 'Tandatangani & Terbitkan' : 'Sign & Issue On-Chain'}</span>
                     </>
                   )}
                 </button>

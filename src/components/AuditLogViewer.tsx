@@ -11,8 +11,10 @@ import {
 } from 'lucide-react';
 import { api } from '../api';
 import { AuditLog } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export const AuditLogViewer: React.FC = () => {
+  const { t, language } = useLanguage();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [severityFilter, setSeverityFilter] = useState('ALL');
@@ -94,10 +96,12 @@ export const AuditLogViewer: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-slate-800 flex items-center space-x-2">
             <Layers className="w-5 h-5 text-blue-600" />
-            <span>Sistem Audit Trail & Security Event Logs</span>
+            <span>{t.audit.title}</span>
           </h2>
           <p className="text-xs text-slate-500">
-            Pencatatan real-time terhadap seluruh aktivitas autentikasi, otorisasi RBAC, deteksi manipulasi, dan perubahan data
+            {language === 'id'
+              ? 'Pencatatan real-time terhadap seluruh aktivitas autentikasi, otorisasi RBAC, deteksi manipulasi, dan perubahan data'
+              : 'Real-time tamper-evident event logging for authentication, RBAC authorization, tamper detection, and ledger state changes'}
           </p>
         </div>
 
@@ -107,7 +111,7 @@ export const AuditLogViewer: React.FC = () => {
             className="px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-blue-600 hover:bg-slate-50 text-xs font-semibold flex items-center space-x-1.5 transition-colors shadow-xs"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Ekspor JSON</span>
+            <span>{t.audit.exportJson}</span>
           </button>
           <button
             onClick={fetchLogs}
@@ -124,7 +128,7 @@ export const AuditLogViewer: React.FC = () => {
         <div className="relative flex-1 min-w-[200px]">
           <input
             type="text"
-            placeholder="Cari dalam log (IP, event, aktor, detail)..."
+            placeholder={language === 'id' ? 'Cari dalam log (IP, event, aktor, detail)...' : 'Search in logs (IP, event, actor, details)...'}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 pl-9 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-600 font-medium"
@@ -139,10 +143,10 @@ export const AuditLogViewer: React.FC = () => {
             onChange={(e) => setSeverityFilter(e.target.value)}
             className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-blue-600 font-medium"
           >
-            <option value="ALL">Semua Tingkat Keparahan</option>
-            <option value="CRITICAL">CRITICAL (Ancaman / Pelanggaran)</option>
-            <option value="WARNING">WARNING (Peringatan)</option>
-            <option value="INFO">INFO (Operasional Normal)</option>
+            <option value="ALL">{language === 'id' ? 'Semua Tingkat Keparahan' : 'All Severity Levels'}</option>
+            <option value="CRITICAL">{language === 'id' ? 'CRITICAL (Ancaman / Pelanggaran)' : 'CRITICAL (Threat / Violation)'}</option>
+            <option value="WARNING">{language === 'id' ? 'WARNING (Peringatan)' : 'WARNING (Warning)'}</option>
+            <option value="INFO">{language === 'id' ? 'INFO (Operasional Normal)' : 'INFO (Normal Ops)'}</option>
           </select>
 
           <select
@@ -150,7 +154,7 @@ export const AuditLogViewer: React.FC = () => {
             onChange={(e) => setEventTypeFilter(e.target.value)}
             className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-blue-600 font-medium"
           >
-            <option value="ALL">Semua Tipe Event</option>
+            <option value="ALL">{language === 'id' ? 'Semua Tipe Event' : 'All Event Types'}</option>
             <option value="LOGIN_SUCCESS">LOGIN_SUCCESS</option>
             <option value="LOGIN_FAILED">LOGIN_FAILED</option>
             <option value="AUTHZ_DENIED">AUTHZ_DENIED (RBAC/IDOR)</option>
@@ -167,22 +171,22 @@ export const AuditLogViewer: React.FC = () => {
         {loading ? (
           <div className="p-12 text-center text-slate-500 flex flex-col items-center space-y-2">
             <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
-            <span className="text-xs">Memuat audit trail...</span>
+            <span className="text-xs">{t.common.loading}...</span>
           </div>
         ) : filteredLogs.length === 0 ? (
           <div className="p-12 text-center text-slate-500 text-xs">
-            Tidak ada log aktivitas yang cocok dengan kriteria filter.
+            {t.audit.empty}
           </div>
         ) : (
           <div className="overflow-x-auto max-h-[600px]">
             <table className="w-full text-left text-xs text-slate-700">
               <thead className="bg-slate-50 text-slate-600 uppercase font-semibold border-b border-slate-200 text-[10px] tracking-wider sticky top-0 z-10 backdrop-blur-sm">
                 <tr>
-                  <th className="px-5 py-3.5">Waktu & Severity</th>
-                  <th className="px-5 py-3.5">Event Type & Endpoint</th>
-                  <th className="px-5 py-3.5">Aktor & Role</th>
-                  <th className="px-5 py-3.5">IP Address</th>
-                  <th className="px-5 py-3.5">Detail Peristiwa</th>
+                  <th className="px-5 py-3.5">{t.audit.tableTime}</th>
+                  <th className="px-5 py-3.5">{t.audit.tableEvent}</th>
+                  <th className="px-5 py-3.5">{t.audit.tableActor}</th>
+                  <th className="px-5 py-3.5">{t.audit.tableIp}</th>
+                  <th className="px-5 py-3.5">{t.audit.tableDetails}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium font-mono text-[11px]">
@@ -190,7 +194,7 @@ export const AuditLogViewer: React.FC = () => {
                   <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="px-5 py-3.5">
                       <div className="text-slate-800 font-sans text-[11px]">
-                        {new Date(log.timestamp).toLocaleString('id-ID')}
+                        {new Date(log.timestamp).toLocaleString(language === 'id' ? 'id-ID' : 'en-US')}
                       </div>
                       <div className="mt-1">{getSeverityBadge(log.severity)}</div>
                     </td>
