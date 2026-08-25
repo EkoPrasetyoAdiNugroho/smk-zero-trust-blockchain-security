@@ -245,7 +245,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               )}
 
               {/* Mitra DUDI Portal */}
-              {(!currentUser || currentUser.role === 'DUDI' || currentUser.role === 'KEPALA_SEKOLAH') && (
+              {(!currentUser || ['DUDI', 'KEPALA_SEKOLAH', 'TU', 'AUDITOR'].includes(currentUser.role)) && (
                 <button
                   id="nav-dudi-tab"
                   onClick={() => handleTabClick('dudi')}

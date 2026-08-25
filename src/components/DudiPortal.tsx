@@ -139,17 +139,24 @@ export const DudiPortal: React.FC<DudiPortalProps> = ({
           </div>
         </div>
 
-        <button
-          id="dudi-create-cert-btn"
-          onClick={() => {
-            setShowIssueModal(true);
-            setError(null);
-          }}
-          className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all flex items-center space-x-2 shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>{t.dudi.issueNew}</span>
-        </button>
+        {currentUser?.role === 'DUDI' ? (
+          <button
+            id="dudi-create-cert-btn"
+            onClick={() => {
+              setShowIssueModal(true);
+              setError(null);
+            }}
+            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all flex items-center space-x-2 shrink-0 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>{t.dudi.issueNew}</span>
+          </button>
+        ) : (
+          <div className="px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold flex items-center space-x-2 shrink-0">
+            <ShieldCheck className="w-4 h-4 text-slate-500 shrink-0" />
+            <span>{language === 'id' ? 'Pratinjau Sertifikat Industri Terverifikasi' : 'Verified Industry Certificate Preview'}</span>
+          </div>
+        )}
       </div>
 
       {/* Issued PKL Table */}

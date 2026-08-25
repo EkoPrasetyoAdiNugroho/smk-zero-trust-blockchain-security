@@ -666,11 +666,11 @@ async function startServer() {
     });
   });
 
-  // POST /api/documents/upload (TU / DUDI upload document draft)
+  // POST /api/documents/upload (TU / DUDI upload document draft - Segregation of Duties Enforced)
   app.post(
     '/api/documents/upload',
     authenticateJwt,
-    requireRole(['TU', 'DUDI', 'KEPALA_SEKOLAH']),
+    requireRole(['TU', 'DUDI']),
     (req: AuthenticatedRequest, res: Response) => {
       const {
         documentType,
@@ -830,6 +830,23 @@ async function startServer() {
       }
 
       const isDudi = req.user?.role === 'DUDI';
+      const isKepsek = req.user?.role === 'KEPALA_SEKOLAH';
+
+      // Strict Role Segregation on Document Type Issuance
+      if (doc.documentType === 'SERTIFIKAT_PKL' && !isDudi) {
+        return res.status(403).json({
+          error: 'FORBIDDEN_ISSUANCE',
+          message: 'Sertifikat PKL / Magang hanya sah jika diterbitkan dan ditandatangani oleh Mitra Industri (DUDI).',
+        });
+      }
+
+      if ((doc.documentType === 'IJAZAH' || doc.documentType === 'TRANSKRIP') && !isKepsek) {
+        return res.status(403).json({
+          error: 'FORBIDDEN_ISSUANCE',
+          message: 'Ijazah dan Transkrip Akademik hanya sah jika disahkan oleh Kepala Sekolah.',
+        });
+      }
+
       const issuerRole = isDudi ? 'DUDI' : 'SEKOLAH';
       const issuerAddress = isDudi ? blockchain.DUDI_ISSUER_ADDRESS : blockchain.SCHOOL_ISSUER_ADDRESS;
 
