@@ -994,6 +994,16 @@ async function startServer() {
     }
   );
 
+  // GET /api/download/report
+  app.get('/api/download/report', (req: Request, res: Response) => {
+    const filePath = path.join(process.cwd(), 'public', 'Laporan_Tugas_Akhir_Cloud_Security_Architecture.docx');
+    res.download(filePath, 'Laporan_Tugas_Akhir_Cloud_Security_Architecture.docx', (err) => {
+      if (err && !res.headersSent) {
+        res.status(404).json({ error: 'File laporan belum digenerate.' });
+      }
+    });
+  });
+
   // ==========================================
   // 8. AUTOMATED SECURITY TEST SUITE (TEST-001..TEST-020)
   // ==========================================

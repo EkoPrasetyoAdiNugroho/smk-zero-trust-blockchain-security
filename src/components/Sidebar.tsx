@@ -19,6 +19,7 @@ import {
   Menu,
   X,
   Lock,
+  FileText,
 } from 'lucide-react';
 import { User, UserRole } from '../types';
 import { AppLogo } from './AppLogo';
@@ -410,6 +411,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
             </div>
           )}
+
+          {/* Download Word Report Link */}
+          <a
+            href="/api/download/report"
+            download="Laporan_Tugas_Akhir_Cloud_Security_Architecture.docx"
+            className="w-full py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold border border-blue-200 transition-colors flex items-center justify-center space-x-2 shadow-2xs"
+          >
+            <FileText className="w-3.5 h-3.5 text-blue-600" />
+            <span>{language === 'id' ? 'Unduh Laporan (.docx)' : 'Download Report (.docx)'}</span>
+          </a>
 
           {/* System Protocol & School Footer */}
           <div className="px-1 space-y-1">

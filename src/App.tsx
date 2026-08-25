@@ -10,6 +10,7 @@ import {
   Search,
   ExternalLink,
   ChevronRight,
+  FileText,
 } from 'lucide-react';
 import { Sidebar } from './components/Sidebar';
 import { LoginPage } from './components/LoginPage';
@@ -298,6 +299,16 @@ export default function App() {
           </div>
 
           <div className="flex items-center space-x-3 text-xs">
+            <a
+              href="/api/download/report"
+              download="Laporan_Tugas_Akhir_Cloud_Security_Architecture.docx"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold border border-blue-200 transition-colors shadow-2xs"
+              title="Unduh Laporan Tugas Akhir (.docx)"
+            >
+              <FileText className="w-3.5 h-3.5 text-blue-600" />
+              <span>Unduh Laporan Word (.docx)</span>
+            </a>
+
             <LanguageToggle variant="compact" />
 
             <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-medium border border-blue-200">
